@@ -1,6 +1,6 @@
-FIRST_NAME_POOL = {"Oriko"}
+FIRST_NAME_POOL = {"Oriko", "Kirika", "Yuma", "Iroha", "Yachiyo", "Tsuruno"}
 
-LAST_NAME_POOL = {"Mikuni"}
+LAST_NAME_POOL = {"Mikuni", "Kure", "Chitose", "Tamaki", "Nanami", "Yui"}
 
 EITHER_NAME_POOL = { 
 "Kaname",

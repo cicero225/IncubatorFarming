@@ -38,6 +38,9 @@ class Meguca:
             return_str_list.extend([stat, ": ", str(self.stats.get(stat, None)), "\n"])
         return_str_list.append(">")
         return "".join(return_str_list)
+        
+    def GetFriendlyName(self):
+        return self.personal_name + " " + self.surname
 
     @classmethod
     def MakeNew(cls, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends=None, family=None):
@@ -64,7 +67,7 @@ class Meguca:
                 new_meguca.stats[stat] = random.randint(sensor_behavior.full_range[0], sensor_behavior.full_range[1])
             else:
                 new_meguca.stats[stat] = random.randint(max(sensor_behavior.full_range[0], target - sensor_range),
-                                                  min(sensor_behavior.full_range[1], target + sensor_range))
+                                                        min(sensor_behavior.full_range[1], target + sensor_range))
         return new_meguca
 
     def RandomizeName(self) -> None:
@@ -76,4 +79,6 @@ class Meguca:
         
     def RestoreFromSaved(self):
         pass
+        
+    # Todo: need function for determining if a girl accepts contract or not.
     
