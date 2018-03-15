@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, List, Dict, Callable
 import random
 
 from Objs.Utils.GlobalDefines import *
@@ -16,7 +16,7 @@ class Meguca:
     
     # We effectively need two constructors: One that makes a new meguca entirely, and one that remakes one that was stored.
     # This initializes the attributes, but the actual "constructors" are MakeNew and RestoreFromSaved
-    def __init__(self):
+    def __init__(self, cleanup: Callable=None):
         self.id = self.ALLOCATOR.GetNewID()
         self.is_witch = False
         self.is_contracted = False
@@ -26,13 +26,16 @@ class Meguca:
         self.stats = {}
         self.friends = []
         self.family = []
+        self.cleanup = cleanup
     
     def __del__(self):
+        if self.cleanup is not None:
+            self.cleanup(self)
         if self.id is not None:
             self.ALLOCATOR.ReturnID(self.id)
     
     def __repr__(self):
-        return_str_list = ["<Meguca class. Name: ", self.personal_name + " " + self.surname, "\nIs Witch: ",
+        return_str_list = ["<Meguca class. Name: ", self.personal_name + " " + self.surname, " id: " +  str(self.id) + "\nIs Witch: ",
                            str(self.is_witch), "\nWish Type: ", self.wish_type, "\n"]
         for stat in self.MEGUCA_STATS:
             return_str_list.extend([stat, ": ", str(self.stats.get(stat, None)), "\n"])
@@ -43,7 +46,7 @@ class Meguca:
         return self.personal_name + " " + self.surname
 
     @classmethod
-    def MakeNew(cls, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends=None, family=None):
+    def MakeNew(cls, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends: List[int]=None, family: List[int]=None, cleanup: Callable=None):
         if targets is None:
             targets = {}
         if sensors is None:
@@ -52,7 +55,7 @@ class Meguca:
             friends = []
         if family is None:
             family = []    
-        new_meguca = cls()
+        new_meguca = cls(cleanup)
         new_meguca.friends = friends
         new_meguca.family = family
         new_meguca.RandomizeName()

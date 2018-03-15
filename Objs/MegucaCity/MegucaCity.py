@@ -22,19 +22,35 @@ class MegucaCity:
         self.witches = {}
         self.dead_megucas = {}  # That is not dead which can eternal lie.
         self.all_names = set()  # Just making sure we don't get duplicate megucas with the same name.
-        
+    
+    def GetMegucaById(self, id: int) -> Meguca:
+        for look_in in [self.contracted_megucas, self.potential_megucas, self.witches, self.dead_megucas]:
+            maybe = look_in.get(id)
+            if maybe is not None:
+                return maybe
+    
     def ContractMeguca(self, id: int):
         self.contracted_megucas[id] = self.potential_megucas[id]
         del self.potential_megucas[id]
         self.contracted_megucas[id].is_contracted = True
-        
+    
+    def MegucaCleanupFunctor(self, meguca: Meguca):
+        for id in meguca.friends:
+            potential = self.GetMegucaById(id)
+            if potential is not None:  # Megucas are sometimes destroyed together, so sometimes the friend being looked for is already gone.
+                potential.friends.remove(meguca.id)
+        for id in meguca.family:
+            potential = self.GetMegucaById(id)
+            if potential is not None:
+                potential.family.remove(meguca.id)
+    
     def NewSensorMeguca(self, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends: List[int]=None) -> Meguca:
         if friends is None:
             friends = []
         # Make a new meguca, and also figure out who their friends/family are, if any. friends, if provided, will be used as a list of guaranteed friends.
         # Returns whoever this meguca is.
         while True:
-            new_meguca = Meguca.MakeNew(targets, sensors)
+            new_meguca = Meguca.MakeNew(targets, sensors, cleanup=self.MegucaCleanupFunctor)
             if new_meguca.GetFriendlyName() not in self.all_names:
                 self.all_names.add(new_meguca.GetFriendlyName())
                 break
