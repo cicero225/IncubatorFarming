@@ -20,6 +20,7 @@ class Meguca:
         self.id = self.ALLOCATOR.GetNewID()
         self.is_witch = False
         self.is_contracted = False
+        self.is_dead = False
         self.personal_name = ""
         self.surname = ""
         self.wish_type = ""
@@ -29,27 +30,52 @@ class Meguca:
         self.cleanup = cleanup
     
     def __del__(self):
-        if self.cleanup is not None:
-            self.cleanup(self)
         if self.id is not None:
             self.ALLOCATOR.ReturnID(self.id)
     
     def __repr__(self):
-        return_str_list = ["<Meguca class. Name: ", self.personal_name + " " + self.surname, " id: " +  str(self.id) + "\nIs Witch: ",
-                           str(self.is_witch), "\nWish Type: ", self.wish_type, "\n"]
+        return_str_list = ["<Meguca class. Name: ", self.personal_name , " " , self.surname, " id: " ,  str(self.id) , "\nIs Witch: ",
+                           str(self.is_witch), "\nIs Contracted: ", str(self.is_contracted), "\nIs Dead: ",
+                           str(self.is_dead), "\nWish Type: ", self.wish_type, "\n"]
         for stat in self.MEGUCA_STATS:
             return_str_list.extend([stat, ": ", str(self.stats.get(stat, None)), "\n"])
         return_str_list.append(">")
         return "".join(return_str_list)
+        
+    def PrintFriends(self):
+        # We don't want this in __repr__, because it might get very long and obnoxious. This makes it a manual call.
+        output_string_list = ["Friends:"]
+        for friend in self.friends:
+            output_string_list.append(friend.GetFriendlyName())
+        return "\n".join(output_string_list)
+        
+    def PrintFamily(self):
+        # We don't want this in __repr__, because it might get very long and obnoxious. This makes it a manual call.
+        output_string_list = ["Family:"]
+        for member in self.family:
+            output_string_list.append(member.GetFriendlyName())
+        return "\n".join(output_string_list)
     
     def __eq__(self, other):
         return self.id == other.id
         
     def GetFriendlyName(self):
         return self.personal_name + " " + self.surname
+        
+    def IncreaseStat(self, stat: str, change: int):
+        full_range = self.MEGUCA_STATS[stat].full_range
+        # I prefer this to the nested min/max, but tastes vary
+        if change > 0:
+            self.stats[stat] = min(full_range[1], self.stats[stat] + change)
+        else:
+            self.stats[stat] = max(full_range[0], self.stats[stat] + change)
+            
+    # Purely Convenience
+    def DecreaseStat(self, stat: str, change: int):
+        self.IncreaseStat(stat, -change)
 
     @classmethod
-    def MakeNew(cls, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends: List[Any]=None, family: List[Any]=None, cleanup: Callable=None):
+    def MakeNew(cls, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends=None, family=None, cleanup: Callable=None):
         if targets is None:
             targets = {}
         if sensors is None:
