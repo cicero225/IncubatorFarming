@@ -16,7 +16,7 @@ class Meguca:
     
     # We effectively need two constructors: One that makes a new meguca entirely, and one that remakes one that was stored.
     # This initializes the attributes, but the actual "constructors" are MakeNew and RestoreFromSaved
-    def __init__(self, cleanup: Callable=None):
+    def __init__(self, cleanup: Callable=None, friend_tracker_list: List[Any]=None, family_tracker_list: List[Any]=None):
         self.id = self.ALLOCATOR.GetNewID()
         self.is_witch = False
         self.is_contracted = False
@@ -24,8 +24,8 @@ class Meguca:
         self.surname = ""
         self.wish_type = ""
         self.stats = {}
-        self.friends = []
-        self.family = []
+        self.friends = [] if friend_tracker_list is None else friend_tracker_list
+        self.family = [] if family_tracker_list is None else family_tracker_list
         self.cleanup = cleanup
     
     def __del__(self):
@@ -41,12 +41,15 @@ class Meguca:
             return_str_list.extend([stat, ": ", str(self.stats.get(stat, None)), "\n"])
         return_str_list.append(">")
         return "".join(return_str_list)
+    
+    def __eq__(self, other):
+        return self.id == other.id
         
     def GetFriendlyName(self):
         return self.personal_name + " " + self.surname
 
     @classmethod
-    def MakeNew(cls, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends: List[int]=None, family: List[int]=None, cleanup: Callable=None):
+    def MakeNew(cls, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends: List[Any]=None, family: List[Any]=None, cleanup: Callable=None):
         if targets is None:
             targets = {}
         if sensors is None:
@@ -55,9 +58,7 @@ class Meguca:
             friends = []
         if family is None:
             family = []    
-        new_meguca = cls(cleanup)
-        new_meguca.friends = friends
-        new_meguca.family = family
+        new_meguca = cls(cleanup, friend_tracker_list=friends, family_tracker_list=family)
         new_meguca.RandomizeName()
         new_meguca.RandomizeWish()
         for stat, sensor_behavior in cls.MEGUCA_STATS.items():

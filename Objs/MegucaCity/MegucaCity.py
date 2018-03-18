@@ -3,6 +3,7 @@ from Objs.Utils.BaseUtils import WeightedDictRandom
 
 from Objs.Meguca.Meguca import Meguca
 from Objs.MegucaCity.Defines import *
+from Objs.RelationshipTracker.RelationshipTracker import RelationshipTracker
 
 import itertools
 import random
@@ -22,6 +23,8 @@ class MegucaCity:
         self.witches = {}
         self.dead_megucas = {}  # That is not dead which can eternal lie.
         self.all_names = set()  # Just making sure we don't get duplicate megucas with the same name.
+        self.friends_tracker = RelationshipTracker()
+        self.family_tracker = RelationshipTracker()
     
     def GetMegucaById(self, id: int) -> Meguca:
         for look_in in [self.contracted_megucas, self.potential_megucas, self.witches, self.dead_megucas]:
@@ -35,16 +38,10 @@ class MegucaCity:
         self.contracted_megucas[id].is_contracted = True
     
     def MegucaCleanupFunctor(self, meguca: Meguca):
-        for id in meguca.friends:
-            potential = self.GetMegucaById(id)
-            if potential is not None:  # Megucas are sometimes destroyed together, so sometimes the friend being looked for is already gone.
-                potential.friends.remove(meguca.id)
-        for id in meguca.family:
-            potential = self.GetMegucaById(id)
-            if potential is not None:
-                potential.family.remove(meguca.id)
+        self.friends_tracker.RemoveMember(meguca)
+        self.family_tracker.RemoveMember(meguca)
     
-    def NewSensorMeguca(self, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends: List[int]=None) -> Meguca:
+    def NewSensorMeguca(self, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends: List[Any]=None) -> Meguca:
         if friends is None:
             friends = []
         # Make a new meguca, and also figure out who their friends/family are, if any. friends, if provided, will be used as a list of guaranteed friends.
@@ -58,22 +55,21 @@ class MegucaCity:
         # It is assumed that all of these must lie in the pool of potential_megucas + contracted_megucas + witches + dead_megucas = MEGUCA_POPULATION + dead_megucas (we include dead megucas to prevent numerical issues)
         # The probability of a given friend of theirs already being in the pool controlled by frienships stat and this population count.
         # However, we must first determine family, as that supersedes friends.
-        already_used = set(friends)
+        already_used = set(self.friends_tracker.Get(new_meguca))
         # TODO: It would be fun flavorwise for girls who have dead/witched friends to be able to bring them back in their wish,
         # or to have altered stats, but we can save that for later (especially since the stats would have to somehow work with
         # the sensors.)
         # We will need this merged dict no matter what anyway.
         all_potential_gucas = {**self.contracted_megucas, **self.potential_megucas,
                                **self.witches, **self.dead_megucas}
-        friendship_weights = {id: meguca.stats["friendships"] for id, meguca in all_potential_gucas.items() if id not in friends}
+        friendship_weights = {id: meguca.stats["friendships"] for id, meguca in all_potential_gucas.items() if meguca not in friends}
         for id, meguca in all_potential_gucas.items():
             if meguca.surname == new_meguca.surname:
-                new_meguca.family.append(id)
-                meguca.family.append(new_meguca.id)
+                self.family_tracker.Connect(meguca, new_meguca)
                 del friendship_weights[id]
                 already_used.add(id)
         # add guaranteed friends
-        new_meguca.friends.extend(friends)
+        self.friends_tracker.AddMultiple(new_meguca, friends)
         for _ in range(new_meguca.stats["friendships"] - len(friends)):
             prob_already_exists_friend = (sum(weight for id, weight in friendship_weights.items())/
                                           (3*(MEGUCA_POPULATION + len(self.dead_megucas))))
@@ -84,11 +80,10 @@ class MegucaCity:
                     if id in already_used:
                         continue
                     meguca = all_potential_gucas[id]
-                    new_meguca.friends.append(id)
+                    self.friends_tracker.Connect(new_meguca, meguca)
                     # NOTE: This procedure will often give megucas more friends than their friendships stat strictly dictates.
                     # This is FINE, and a deliberate feature, not a bug. It could be corrected here with an if statement if we really
                     # wanted.
-                    meguca.friends.append(new_meguca.id)
                     del friendship_weights[id]
                     already_used.add(id)
                     break
