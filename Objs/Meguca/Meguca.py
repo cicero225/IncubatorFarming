@@ -106,8 +106,14 @@ class Meguca:
 
     def RandomizeWish(self) -> None:
         self.wish_type = random.choice(self.WISH_TYPES)
-        
-    def RestoreFromSaved(self):
+    
+    # Outputs a version of this object that is suitable for writing to the sqlite db
+    def ToSqlDict(self) -> Dict[str, Any]:
+        pass
+    
+    # Makes a version of the object 
+    @classmethod
+    def RestoreFromSaved(cls, from_sql: Dict[str, Any]):
         pass
         
     # Todo: need function for determining if a girl accepts contract or not.
