@@ -104,7 +104,7 @@ class DBManager:
         c.execute(
             "INSERT OR REPLACE INTO {} ({}, {}, {}) values (?, ?, ?)".format(
                 EXCEPTION_TABLE_NAME, *(x[0] for x in EXCEPTION_TABLE_FIELDS)),
-            (self.city_id, exception_text, int(has_failed)))
+            (self.city_id, int(has_failed), exception_text))
         self.connection.commit()
     
     def Commit(self):
