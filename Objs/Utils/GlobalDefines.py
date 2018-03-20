@@ -1,4 +1,13 @@
+from enum import Enum
 from typing import List, Any
+
+# Represents a valid affinity type in sqlite3; used to describe column affinities for attempted coercion.
+class SqliteAffinityType(Enum):
+    TEXT = 1
+    NUMERIC = 2
+    INTEGER = 3
+    REAL = 4
+    NONE = 5    
 
 # Hopefully not too big, just used to define how stats work with relation to sensors.
 class SensorBehavior:

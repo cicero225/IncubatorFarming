@@ -2,8 +2,48 @@ from functools import wraps
 from typing import Any
 import sqlite3
 
+from Objs.Utils.GlobalDefines import *
+from Objs.DBManager.Defines import *
 
+def read_method(input_func):
+    def output_func(self, *args, **kwargs):
+        if "read_flag" not in kwargs:
+            self.WriteExceptionState("read_flag argument must be set!")
+            raise Exception("read_flag argument must be set!")
+        if "table" not in kwargs:
+            self.WriteExceptionState("table must be set!")
+            raise Exception("table must be set!")
+        flag = kwargs["read_flag"]
+        table = kwargs["table"]
+        if flag == "read_only":
+            pass
+        elif flag == "may_be_modified":
+            self.valid_write_tables.add(table)
+        elif flag == "expected_modification":
+            self.valid_write_tables.add(table)
+            self.must_write_tables.add(table)
+        else:
+            self.WriteExceptionState("read_flag " + str(flag) + " is not valid!")
+            raise Exception("read_flag " + str(flag) + " is not valid!")
+        return input_func(self, *args, **kwargs)
+    return wraps(input_func)(output_func)
 
+# Holy shit Python why this.    
+def write_method(default_forced=False):
+    def wow_decorator(input_func):
+        def output_func(self, *args, **kwargs):
+            if "table" not in kwargs:
+                self.WriteExceptionState("table must be set!")
+                raise Exception("table must be set!")
+            if not kwargs.get("forced", default_forced):
+                if kwargs["table"] not in self.valid_write_tables:
+                    self.WriteExceptionState("table " + kwargs["table"] + " not valid write table!")
+                    raise Exception("table " + kwargs["table"] + " not valid write table!")
+            return input_func(self, *args, **kwargs)
+        return wraps(input_func)(output_func)
+    return wow_decorator
+
+    
 # TODO: Use this to write an Exception if anything in the main fails?
 
 # This class handles reading and writing data to the sqlite3 db for the Incubator Farming game.
@@ -24,57 +64,48 @@ import sqlite3
 # This class will execute write statements in the order they were provided. As such, it is not robust to write commands provided in illogical order. Since
 # Python connection is deliberately not thread-safe (and will in fact raise and Exception), neither is this object.
 class DBManager:
-    def __init__(self, db_path=":memory:"):
+    def __init__(self, city_id: int, db_path=":memory:"):
         self.db_path = db_path
+        self.city_id = city_id
         self.connection = sqlite3.connect(db_path)
         self.valid_write_tables = set()
         self.must_write_tables = set()
         self.written_tables = set()
         self.statement_queue = []    
+        self.CreateTableIfDoesNotExist(EXCEPTION_TABLE_FIELDS, table=EXCEPTION_TABLE_NAME)
         
     def __del__(self):
         self.connection.close()        
     
-    # TODO: Change these exceptions to be a bit more informative.
-    @staticmethod
-    def read_method(input_func)
-        def output_func(self, *args, **kwargs):
-            if "read_flag" not in kwargs:
-                self.WriteExceptionState("read_flag argument must be set!")
-                raise Exception("read_flag argument must be set!")
-            if "table" not in kwargs:
-                self.WriteExceptionState("table must be set!")
-                raise Exception("table must be set!")
-            flag = kwargs["read_flag"]
-            table = kwargs["table"]
-            if flag == "read_only":
-                pass
-            elif flag == "may_be_modified":
-                self.valid_write_tables.add(table)
-            elif flag == "expected_modification":
-                self.valid_write_tables.add(table)
-                self.must_write_tables.add(table)
-            else:
-                self.WriteExceptionState("read_flag is not valid!")
-                raise Exception("read_flag is not valid!")
-            return input_func(self, *args, **kwargs)
-        return wraps(input_func)(output_func)
-        
-    @staticmethod
-    def write_method(input_func):
-        def output_func(self, *args, **kwargs):
-            if "table" not in kwargs:
-                self.WriteExceptionState("table must be set!")
-                raise Exception("table must be set!")
-            if not kwargs.get("forced", False):
-                if kwargs["table"] not in self.valid_write_tables:
-                    self.WriteExceptionState("table not valid write table!")
-                    raise Exception("table not valid write table!")
-            return input_func(self, *args, **kwargs)
-        return wraps(input_func)(output_func)
+    # row_names is an iterable of tuples of (Column Name, SqliteAffinityType, Bool(is primary key?))
+    # Note that this is a highly INSECURE call, since it uses the text in row_names and table directly as part of the call.
+    # Name sanitization is its own adventure we won't be going through; suffice to say don't use this function
+    # with user inputs, and ideally input only literal strings into the arguments.
+    @write_method(default_forced=True)
+    def CreateTableIfDoesNotExist(self, row_names, table):
+        c = self.connection.cursor()
+        sql_template_list = []
+        primary_key_list = []
+        sql_insert_list = [table]
+        primary_insert_list = []
+        for col_name, affinity, primary in row_names:
+            sql_template_list.append("{} {}")
+            sql_insert_list.extend([col_name, affinity.name])
+            if primary is True:
+                primary_key_list.append("{}")
+                primary_insert_list.append(col_name)
+        sql_template_list.append(" PRIMARY KEY (" + ", ".join(primary_key_list) + ")")
+        sql_insert_list.extend(primary_insert_list)
+        sql_string = "CREATE TABLE IF NOT EXISTS {} (" + ", ".join(sql_template_list) + ")"
+        c.execute(sql_string.format(*sql_insert_list))
     
-    def WriteExceptionState(self, exception_text: str):
-        pass
+    def WriteExceptionState(self, exception_text: str, has_failed=True):
+        c = self.connection.cursor()
+        c.execute(
+            "INSERT OR REPLACE INTO {} ({}, {}, {}) values (?, ?, ?)".format(
+                EXCEPTION_TABLE_NAME, *(x[0] for x in EXCEPTION_TABLE_FIELDS)),
+            (self.city_id, exception_text, int(has_failed)))
+        self.connection.commit()
     
     def Commit(self):
         # Behavior Checking 
@@ -87,4 +118,5 @@ class DBManager:
         for statement in self.statement_queue:
             c.execute(statement)
         self.connection.commit()
+        self.WriteExceptionState("", False)
         
