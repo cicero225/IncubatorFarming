@@ -7,8 +7,7 @@ from Objs.Utils.GlobalDefines import *
 from Objs.MegucaCity.MegucaCity import MegucaCity
 
 
-new_city = MegucaCity()
-
+new_city = MegucaCity(500)  # city_id = 500
 
 
 # A simple test cycle. Set sensors, get new meguca, get new friend meguca, decay potential.
@@ -100,6 +99,9 @@ while True:
         new_city.ContractMeguca(new_meguca.id)
     else:
         print("We did not contract!")
+        
+    print("Demoing DB serialization...")
+    print(new_meguca.ToMegucaRow(new_city.city_id))
     
     if new_city.contracted_megucas:
         friend_meguca = random.choice(list(new_city.contracted_megucas.values()))

@@ -1,4 +1,5 @@
 from typing import Any, List, Dict, Callable
+import json
 import random
 
 from Objs.Utils.GlobalDefines import *
@@ -11,7 +12,8 @@ class Meguca:
     ALLOCATOR = UniqueIDAllocator()  # Created at import time
     MEGUCA_STATS = MEGUCA_STATS
     # Not stats, but still part of the class.
-    MEGUCA_FIXED_ATTRIBUTES = ["is_witch", "id", "personal_name", "surname", "wish_type", "friends", "family", "is_contracted"]
+    MEGUCA_FIXED_ATTRIBUTES = ["is_witch", "id", "personal_name", "surname", "wish_type", "friends", "family", "is_contracted", "is_dead"]
+    MEGUCA_FIELD_NAMES = ["IsWitch", "MagicalGirlID", "PersonalName", "Surname", "WishType", "Friends", "Family", "IsContracted", "IsDead"]
     WISH_TYPES = WISH_TYPES
     
     # We effectively need two constructors: One that makes a new meguca entirely, and one that remakes one that was stored.
@@ -108,8 +110,17 @@ class Meguca:
         self.wish_type = random.choice(self.WISH_TYPES)
     
     # Outputs a version of this object that is suitable for writing to the sqlite db
-    def ToSqlDict(self) -> Dict[str, Any]:
-        pass
+    def ToMegucaRow(self, city_id):
+        # A little bit of hardcoding...
+        result = {}
+        for i, name in enumerate(self.MEGUCA_FIELD_NAMES):
+            if name in ["Friends", "Family"]:
+                result[name] = json.dumps([x.id for x in getattr(self, self.MEGUCA_FIXED_ATTRIBUTES[i])])
+            else:
+                result[name] = getattr(self, self.MEGUCA_FIXED_ATTRIBUTES[i])
+        result["Stats"] = json.dumps(json.dumps(self.stats))
+        result["CityID"] = city_id
+        return result
     
     # Makes a version of the object 
     @classmethod

@@ -18,7 +18,7 @@ class MegucaCity:
 
     MEGUCA_POPULATION = MEGUCA_POPULATION
 
-    def __init__(self):  # Makes an empty city
+    def __init__(self, city_id):  # Makes an empty city
         self.contracted_megucas = {}   # dict[int id, Meguca]
         self.potential_megucas = {}
         self.witches = {}
@@ -26,6 +26,7 @@ class MegucaCity:
         self.all_names = set()  # Just making sure we don't get duplicate megucas with the same name.
         self.friends_tracker = RelationshipTracker()
         self.family_tracker = RelationshipTracker()
+        self.city_id = city_id
     
     def GetMegucaById(self, id: int) -> Meguca:
         for look_in in [self.contracted_megucas, self.potential_megucas, self.witches, self.dead_megucas]:

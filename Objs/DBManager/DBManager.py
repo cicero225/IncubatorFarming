@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any
+from typing import Any, List
 import sqlite3
 
 from Objs.Utils.GlobalDefines import *
@@ -99,6 +99,50 @@ class DBManager:
         sql_string = "CREATE TABLE IF NOT EXISTS {} (" + ", ".join(sql_template_list) + ")"
         c.execute(sql_string.format(*sql_insert_list))
     
+    # Pulls the contents of a sqlite3 table into a more familiar and convenient Python format.
+    # For best performance (and verification), it expects the caller to know the structure of the table.
+    # It is NOT the intention to support pulling arbitrarily structured tables.
+    # row_namedtuple: a namedtuple class appropriate for this table
+    # primary_key_names: a list of the names of the primary keys.
+    # set_keys: Fields we want to select for (equivalent to WHERE key IS value)
+    # Some arguments (at the end) must be named arguments for proper processing.
+    # return value: A Dict of tuple(primary_key_values) (row_namedtuple, bool), where bool will be used to indicate whether a row has 
+    # been modified, if this table is being written to later.
+    @read_method
+    def ReadTable(self, row_namedtuple, primary_key_names: List[str], set_keys=Dict[str, Any], *args, table: str, read_flag):
+        c = self.connection.cursor()
+        base_string = "SELECT * FROM {}".format(table)
+        if set_keys:
+            where_string = "WHERE "
+            where_string_list = []
+            for key, value in set_keys:
+                where_string_list.append("{} IS ?".format(key))
+            where_string += " AND ".join(where_string_list)
+            base_string += where_string
+        this_table = c.execute(base_string)
+        return_dict = {}
+        for row in this_table:
+            new_entry = (row_namedtuple(), False)
+            primary_key_list = []
+            for idx, col in enumerate(cursor.description):
+                setattr(new_entry[0], col[0], row[idx])
+                if col[0] in primary_key_names:
+                    primary_key_list.append(row[idx])
+            return_list[tuple(primary_key_list)] = new_entry
+        return return_dict
+   
+    # As discussed in the class description, does not commit a write action until Commit() is called.
+    # write_dict should be the same format as the output of ReadTable
+    # field_names must be an object with order.
+    @write_method
+    def WriteTable(self, write_dict, field_names, *args, table: str, forced=False):
+        c = self.connection.cursor()
+        sql_base_string = "INSERT OR REPLACE INTO {} (" + ", ".join(field_names) + ") VALUES ("
+        for value in write_dict.values():
+            if value[1]:
+                sql_base_string += ", ".join(["?"]*len(field_names)) + ")"
+                c.execute(sql_base_string, tuple(value[0][name] for name in field_names))
+   
     def WriteExceptionState(self, exception_text: str, has_failed=True):
         c = self.connection.cursor()
         c.execute(
