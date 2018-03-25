@@ -5,6 +5,7 @@ from Objs.Meguca.Meguca import Meguca
 from Objs.Meguca.Defines import *
 from Objs.MegucaCity.Defines import *
 from Objs.RelationshipTracker.RelationshipTracker import RelationshipTracker
+from Objs.Utils.UniqueIDAllocator import UniqueIDAllocator
 
 import itertools
 import random
@@ -108,23 +109,33 @@ class MegucaCity:
                 friends.remove(random.choice(friends))
         # Make a new meguca, and also figure out who their friends/family are, if any. friends, if provided, will be used as a list of guaranteed friends.
         # Returns whoever this meguca is.
+        new_meguca = Meguca.MakeNew(targets, sensors, cleanup=self.MegucaCleanupFunctor)
+        new_meguca.friends = self.friends_tracker.Get(new_meguca)
+        new_meguca.family = self.family_tracker.Get(new_meguca)
         while True:
-            new_meguca = Meguca.MakeNew(targets, sensors, cleanup=self.MegucaCleanupFunctor)
-            new_meguca.friends = self.friends_tracker.Get(new_meguca)
-            new_meguca.family = self.family_tracker.Get(new_meguca)
-            if new_meguca.GetFriendlyName() not in self.all_names:
-                self.all_names.add(new_meguca.GetFriendlyName())
-                break
-        # avoid same surname
-        while True:
+            # avoid same surname
             proceed = True
-            for friend in friends:
-                if friend.surname == new_meguca.surname:
+            while True:
+                proceed = True
+                for friend in friends:
+                    if friend.surname == new_meguca.surname:
+                        new_meguca.RandomizeName()
+                        proceed = False
+                        break
+                if proceed:
+                    break
+            if not proceed:
+                continue
+            while True:
+                proceed = True
+                if new_meguca.GetFriendlyName() in self.all_names:
                     new_meguca.RandomizeName()
                     proceed = False
+                else:
                     break
             if proceed:
                 break
+        self.all_names.add(new_meguca.GetFriendlyName())   
         # A simple approach. Each meguca has as many contractable friends as their friendships stat.
         # It is assumed that all of these must lie in the pool of potential_megucas + contracted_megucas + witches + dead_megucas = MEGUCA_POPULATION + dead_megucas (we include dead megucas to prevent numerical issues)
         # The probability of a given friend of theirs already being in the pool controlled by frienships stat and this population count.
@@ -196,27 +207,59 @@ class MegucaCity:
             self.all_names.remove(meguca.GetFriendlyName())
         return potential_lost
                 
-    def WriteCityToDB(self, manager):
+    def WriteCityToDB(self, manager, forced=False):
+        # Comparing the new dict with the old dict is computationally expensive, but probably
+        # worth it to avoid the code maintenance nightmare of explicitly tracking which megucas
+        # are changed.
         write_dict = {}
         for meguca in itertools.chain(
             self.contracted_megucas.values(),
             self.potential_megucas.values(),
             self.witches.values(),
-            self.dead_megucas.values):
-            meguca_row = new_meguca.ToMegucaRow(meguca)
+            self.dead_megucas.values()):
+            meguca_row = meguca.ToMegucaRow(self.city_id)
             this_key = frozenset(getattr(meguca_row, x) for x in MEGUCA_PRIMARY_KEYS)
             # rather then invoke many SQL operations to do this, probably better to handle it here
-            orig_meguca = self.original_read_dict.get(this_key)[0]
-            # We could also pass False into the tuple, but it's even better to just not include it.
-            if orig_meguca == meguca_row:
-                continue
+            orig_meguca = self.original_read_dict.get(this_key, (None, None))[0]
             # One row dict.
-            write_dict[this_key] = (meguca_row, True)}
+            # Note: None != meguca_row evalutates to true, which is what we'd want.
+            write_dict[this_key] = (meguca_row, orig_meguca != meguca_row)
 
-        manager.WriteTable(write_dict, [x[0] for x in MEGUCA_TABLE_FIELDS], table=MEGUCA_TABLE_NAME)
+        manager.WriteTable(write_dict, [x[0] for x in MEGUCA_TABLE_FIELDS], table=MEGUCA_TABLE_NAME, forced=forced)
         
-        # TODO: Handle megucas that were deleted.
-
-
+        # Drop Megucas that were deleted.
+        for deleted_meguca in set(self.original_read_dict) - set(write_dict):
+            manager.DeleteRows({x: getattr(deleted_meguca, x) for x in MEGUCA_PRIMARY_KEYS},
+                               table=MEGUCA_TABLE_NAME, forced=forced)
+    
+    @classmethod
+    def ReadCityFromDb(cls, city_id, manager):
+        new_city = cls(city_id)
+        new_city.original_read_dict = manager.ReadTable(MEGUCA_ROW, MEGUCA_PRIMARY_KEYS, {"CityID": new_city.city_id} , table=MEGUCA_TABLE_NAME, read_flag="may_be_modified")
+        used_ids = list()
+        for primary_keys, row_tuple in new_city.original_read_dict.items():
+            row = row_tuple[0]
+            new_meguca = Meguca.FromMegucaRow(row, new_city.MegucaCleanupFunctor)
+            new_city.friends_tracker.Set(new_meguca, new_meguca.friends)
+            new_city.family_tracker.Set(new_meguca, new_meguca.family)
+            used_ids.append(new_meguca.id)
+            new_city.all_names.add(new_meguca.GetFriendlyName())
+            if new_meguca.is_dead:
+                new_city.dead_megucas[new_meguca.id] = new_meguca
+            elif new_meguca.is_witch:
+                new_city.witches[new_meguca.id] = new_meguca
+            elif new_meguca.is_contracted:
+                new_city.contracted_megucas[new_meguca.id] = new_meguca
+            else:
+                new_city.potential_megucas[new_meguca.id] = new_meguca
+        used_ids.sort()
+        # Override allocator with new ID set.
+        Meguca.ALLOCATOR = UniqueIDAllocator.RestoreFromSaved(used_ids[1], list(set(range(0, used_ids[1] + 1)) - set(used_ids)))
+        all_potential_gucas = {**new_city.contracted_megucas, **new_city.potential_megucas,
+                               **new_city.witches, **new_city.dead_megucas}
+        # We can only do this once all megucas are in place.
+        for meguca in all_potential_gucas.values():
+            meguca.ReconstructFriendsAndFamily(all_potential_gucas)
+        return new_city
                 
     # Todo need functions for girl contracting, witching

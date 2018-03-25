@@ -1,10 +1,12 @@
-from Objs.DBManager.Defines import *
-from Objs.Utils.GlobalDefines import *
+import random
 import sqlite3
 
+from Objs.DBManager.Defines import *
+from Objs.Utils.GlobalDefines import *
 from Objs.DBManager.DBManager import DBManager
 from Objs.Meguca.Defines import *
 from Objs.Meguca.Meguca import Meguca
+from Objs.MegucaCity.MegucaCity import MegucaCity
 
 fake_city_id = 500
 
@@ -55,3 +57,42 @@ same_meguca = Meguca.FromMegucaRow(list(rows.values())[0][0])
 print(same_meguca)
 
 assert(new_meguca == same_meguca)
+
+
+# Make a large city and try writing/reading it too.
+
+# Default in-memory db
+manager = DBManager(456)
+# Test writing and reading a meguca from the DB. This ignores reconstructing friends, etc.
+manager.CreateTableIfDoesNotExist(MEGUCA_TABLE_FIELDS, table=MEGUCA_TABLE_NAME)
+new_city = MegucaCity(456)  # city_id = 456
+
+for _ in range(50):
+    new_meguca = new_city.NewSensorMeguca()
+    # Hardcode just for testing here
+    rand_val = random.random()
+    if rand_val < 0.25:
+        new_city.ContractMeguca(new_meguca.id)
+    elif rand_val < 0.5:
+        new_city.ContractMeguca(new_meguca.id)
+        new_city.WitchMeguca(new_meguca.id)
+    elif rand_val < 0.75:
+        new_city.KillPotential(new_meguca.id)
+
+new_city.WriteCityToDB(manager, forced=True)
+
+manager.Commit()
+
+city_clone = MegucaCity.ReadCityFromDb(456, manager)
+city_clone.original_read_dict = {}
+
+all_potential_gucas = {**new_city.contracted_megucas, **new_city.potential_megucas,
+                       **new_city.witches, **new_city.dead_megucas}
+all_potential_gucas2 = {**city_clone.contracted_megucas, **city_clone.potential_megucas,
+                       **city_clone.witches, **city_clone.dead_megucas}
+assert(all_potential_gucas == all_potential_gucas2)
+assert(city_clone.all_names == new_city.all_names)
+
+# Something is still weird here.
+assert(city_clone.friends_tracker == new_city.friends_tracker)
+assert(city_clone == new_city)

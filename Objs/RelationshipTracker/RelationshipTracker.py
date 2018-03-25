@@ -3,7 +3,7 @@ from copy import copy
 from typing import Any, List
 
 # A simple class that keeps track of a single type of relationship between characters, enforcing symmetry and clean
-# deletion. Assumes sparse relationships. Note that it can be used to store the original objects; so make sure to Disconnect
+# deletion. Assumes sparse relationships. Note that it is to store the original objects; so make sure to Disconnect
 # if you really want such an object to disappear.
 class RelationshipTracker:
     def __init__(self):
@@ -36,8 +36,10 @@ class RelationshipTracker:
     def Connect(self, first: Any, second: Any):
         self.EnforceFullObject(first)
         self.EnforceFullObject(second)
-        self.grid[first.id].append(second)
-        self.grid[second.id].append(first)
+        if second not in self.grid[first.id]:
+            self.grid[first.id].append(second)
+        if first not in self.grid[second.id]:
+            self.grid[second.id].append(first)
         self.id_member_lookup[first.id] = first
         self.id_member_lookup[second.id] = second
     
@@ -50,6 +52,13 @@ class RelationshipTracker:
             self.EnforceFullObject(member)
             self.id_member_lookup[member.id] = member
         return self.grid[self.ProcessObjectOrIdIntoId(member)]
+    
+    # Since this overrides the actual reference, it should not be used merely to mutate the entry.
+    def Set(self, member: Any, value: List[Any]):
+        if self.ProcessObjectOrIdIntoId(member) not in self.id_member_lookup:
+            self.EnforceFullObject(member)
+            self.id_member_lookup[member.id] = member
+        self.grid[self.ProcessObjectOrIdIntoId(member)] = value
         
     def RemoveMember(self, member: Any):
         id = self.ProcessObjectOrIdIntoId(member)

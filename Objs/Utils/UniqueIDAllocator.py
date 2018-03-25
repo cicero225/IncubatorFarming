@@ -21,7 +21,7 @@ class UniqueIDAllocator:
                 return self.recycled_ids.pop()
             self.last_active += 1
             return self.last_active
-        
+    
     def ReturnID(self, id: int) -> None:
         with self.id_lock:
             self.recycled_ids.append(id)

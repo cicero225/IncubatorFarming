@@ -99,6 +99,22 @@ class DBManager:
         sql_string = "CREATE TABLE IF NOT EXISTS {} (" + ", ".join(sql_template_list) + ")"
         c.execute(sql_string.format(*sql_insert_list))
     
+    # Utility Function that makes a WHERE string from key value pairs. (WHERE key IS value)
+    # returns a tuple(string, tuple), where the string can be appended to the sqlstring, and the
+    # inner tuple used to format the string in execute
+    @staticmethod
+    def MakeWhere(set_keys):
+        if not set_keys:
+            return ("", ())
+        where_string = " WHERE "
+        where_string_list = []
+        where_format_list = []
+        for key, value in set_keys.items():
+            where_string_list.append("{} IS ?".format(key))
+            where_format_list.append(value)
+        where_string += " AND ".join(where_string_list)
+        return (where_string, where_format_list)    
+        
     # Pulls the contents of a sqlite3 table into a more familiar and convenient Python format.
     # For best performance (and verification), it expects the caller to know the structure of the table.
     # It is NOT the intention to support pulling arbitrarily structured tables.
@@ -114,14 +130,9 @@ class DBManager:
             set_keys = []
         c = self.connection.cursor()
         base_string = "SELECT * FROM {}".format(table)
-        if set_keys:
-            where_string = "WHERE "
-            where_string_list = []
-            for key, value in set_keys:
-                where_string_list.append("{} IS ?".format(key))
-            where_string += " AND ".join(where_string_list)
-            base_string += where_string
-        this_table = c.execute(base_string)
+        where_string, where_format_list = self.MakeWhere(set_keys)
+        base_string += where_string
+        this_table = c.execute(base_string, where_format_list)
         return_dict = {}
         for row in this_table:
             new_entry = [None]*len(row_namedtuple._fields)
@@ -136,14 +147,25 @@ class DBManager:
     # As discussed in the class description, does not commit a write action until Commit() is called.
     # write_dict should be the same format as the output of ReadTable
     # field_names must be an object with order.
+    # This has Insert/Replace behavior, and does not drop any rows.
     @write_method()
     def WriteTable(self, write_dict, field_names, *args, table: str, forced=False):
         c = self.connection.cursor()
-        sql_base_string = "INSERT OR REPLACE INTO {} (".format(table) + ", ".join(field_names) + ") VALUES ("
+        sql_base_string = "INSERT OR REPLACE INTO {} (".format(table) + ", ".join(field_names) + ") VALUES (" + ", ".join(["?"]*len(field_names)) + ")"
+        insertion_values = []
         for value in write_dict.values():
             if value[1]:
-                sql_base_string += ", ".join(["?"]*len(field_names)) + ")"
-                c.execute(sql_base_string, tuple(getattr(value[0], name) for name in field_names))
+                insertion_values.append(tuple(getattr(value[0], name) for name in field_names))  
+        c.executemany(sql_base_string, insertion_values)
+   
+    # set_keys: Fields we want to select for (equivalent to WHERE key IS value)
+    # Some arguments (at the end) must be named arguments for proper processing.
+    @write_method()
+    def DeleteRows(self, set_keys: Dict[str, Any], *args, table: str, forced=False):
+        c = self.connection.cursor()
+        sql_base_string = "DELETE FROM ()".format(table)
+        where_string, where_format_list = self.MakeWhere(set_keys)
+        c.execute(sql_base_string + where_string, where_format_list)
    
     def WriteExceptionState(self, exception_text: str, has_failed=True):
         c = self.connection.cursor()
