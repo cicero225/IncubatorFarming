@@ -3,6 +3,8 @@ from Objs.Utils.GlobalDefines import *
 import sqlite3
 
 from Objs.DBManager.DBManager import DBManager
+from Objs.Meguca.Defines import *
+from Objs.Meguca.Meguca import Meguca
 
 fake_city_id = 500
 
@@ -22,3 +24,34 @@ print([x[0] for x in c.description])
 # print rows
 for row in rows:
     print(row)
+    
+# Test writing and reading a meguca from the DB. This ignores reconstructing friends, etc.
+
+manager.CreateTableIfDoesNotExist(MEGUCA_TABLE_FIELDS, table=MEGUCA_TABLE_NAME)
+
+new_meguca = Meguca.MakeNew()
+
+print("Full Random Meguca:")
+print(new_meguca)
+
+print('Writing Meguca to DB...')
+
+meguca_row = new_meguca.ToMegucaRow(fake_city_id)
+
+# One row dict.
+write_dict = {frozenset(getattr(meguca_row, x) for x in MEGUCA_PRIMARY_KEYS): (meguca_row, True)}
+
+manager.WriteTable(write_dict, [x[0] for x in MEGUCA_TABLE_FIELDS], table=MEGUCA_TABLE_NAME, forced=True)
+
+manager.Commit()
+
+print('Reading only Meguca From DB...')
+
+# Read rows back.
+rows = manager. ReadTable(MEGUCA_ROW, MEGUCA_PRIMARY_KEYS, table=MEGUCA_TABLE_NAME, read_flag="read_only")
+
+same_meguca = Meguca.FromMegucaRow(list(rows.values())[0][0])
+
+print(same_meguca)
+
+assert(new_meguca == same_meguca)
