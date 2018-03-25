@@ -2,7 +2,7 @@ from Objs.Utils.GlobalDefines import *
 from Objs.Utils.BaseUtils import WeightedDictRandom
 
 from Objs.Meguca.Meguca import Meguca
-from Objs.Meguca.Defines import LAST_NAME_POOL, EITHER_NAME_POOL
+from Objs.Meguca.Defines import *
 from Objs.MegucaCity.Defines import *
 from Objs.RelationshipTracker.RelationshipTracker import RelationshipTracker
 
@@ -27,6 +27,7 @@ class MegucaCity:
         self.friends_tracker = RelationshipTracker()
         self.family_tracker = RelationshipTracker()
         self.city_id = city_id
+        self.original_read_dict = {}  # the original db read in when this object was created, if any.
     
     def GetMegucaById(self, id: int) -> Meguca:
         for look_in in [self.contracted_megucas, self.potential_megucas, self.witches, self.dead_megucas]:
@@ -194,5 +195,28 @@ class MegucaCity:
             del self.potential_megucas[meguca.id]  # Note that potential_lost is now the only owner of these objects.
             self.all_names.remove(meguca.GetFriendlyName())
         return potential_lost
+                
+    def WriteCityToDB(self, manager):
+        write_dict = {}
+        for meguca in itertools.chain(
+            self.contracted_megucas.values(),
+            self.potential_megucas.values(),
+            self.witches.values(),
+            self.dead_megucas.values):
+            meguca_row = new_meguca.ToMegucaRow(meguca)
+            this_key = frozenset(getattr(meguca_row, x) for x in MEGUCA_PRIMARY_KEYS)
+            # rather then invoke many SQL operations to do this, probably better to handle it here
+            orig_meguca = self.original_read_dict.get(this_key)[0]
+            # We could also pass False into the tuple, but it's even better to just not include it.
+            if orig_meguca == meguca_row:
+                continue
+            # One row dict.
+            write_dict[this_key] = (meguca_row, True)}
+
+        manager.WriteTable(write_dict, [x[0] for x in MEGUCA_TABLE_FIELDS], table=MEGUCA_TABLE_NAME)
+        
+        # TODO: Handle megucas that were deleted.
+
+
                 
     # Todo need functions for girl contracting, witching
