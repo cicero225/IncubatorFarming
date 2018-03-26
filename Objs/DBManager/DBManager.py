@@ -62,7 +62,7 @@ def write_method(default_forced=False):
 # This class is paranoid, rather than robust - it raises or allows Exceptions rather than attempting to work its way around.
 
 # This class will execute write statements in the order they were provided. As such, it is not robust to write commands provided in illogical order. Since
-# Python connection is deliberately not thread-safe (and will in fact raise and Exception), neither is this object.
+# Python connection is deliberately not thread-safe (and will in fact raise an Exception), so neither is this object.
 class DBManager:
     def __init__(self, city_id: int, db_path=":memory:"):
         self.db_path = db_path

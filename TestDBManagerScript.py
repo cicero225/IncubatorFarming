@@ -84,15 +84,7 @@ new_city.WriteCityToDB(manager, forced=True)
 manager.Commit()
 
 city_clone = MegucaCity.ReadCityFromDb(456, manager)
-city_clone.original_read_dict = {}
+# Necessasry or else these will not compare equal
+new_city.original_read_dict = city_clone.original_read_dict
 
-all_potential_gucas = {**new_city.contracted_megucas, **new_city.potential_megucas,
-                       **new_city.witches, **new_city.dead_megucas}
-all_potential_gucas2 = {**city_clone.contracted_megucas, **city_clone.potential_megucas,
-                       **city_clone.witches, **city_clone.dead_megucas}
-assert(all_potential_gucas == all_potential_gucas2)
-assert(city_clone.all_names == new_city.all_names)
-
-# Something is still weird here.
-assert(city_clone.friends_tracker == new_city.friends_tracker)
 assert(city_clone == new_city)

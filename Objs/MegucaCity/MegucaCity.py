@@ -30,6 +30,9 @@ class MegucaCity:
         self.city_id = city_id
         self.original_read_dict = {}  # the original db read in when this object was created, if any.
     
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+    
     def GetMegucaById(self, id: int) -> Meguca:
         for look_in in [self.contracted_megucas, self.potential_megucas, self.witches, self.dead_megucas]:
             maybe = look_in.get(id)

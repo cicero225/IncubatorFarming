@@ -11,6 +11,9 @@ class RelationshipTracker:
         self.grid = defaultdict(list)
         self.id_member_lookup = {}
  
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+ 
     @staticmethod
     def ProcessObjectOrIdIntoId(object_or_id):
         if hasattr(object_or_id, "id"):
