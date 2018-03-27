@@ -30,6 +30,7 @@ class Meguca:
         self.friends = [] if friend_tracker_list is None else friend_tracker_list
         self.family = [] if family_tracker_list is None else family_tracker_list
         self.cleanup = cleanup
+        self.stat_contributions = {}
     
     def __del__(self):
         if self.cleanup is not None:
@@ -77,7 +78,11 @@ class Meguca:
     # Purely Convenience
     def DecreaseStat(self, stat: str, change: int):
         self.IncreaseStat(stat, -change)
-
+    
+    def PrecalculateStatModifiers(self):
+        for key, value in self.stats.items():
+            self.stat_contributions[key] = 2*value/(self.MEGUCA_STATS[key].full_range[0] + self.MEGUCA_STATS[key].full_range[1])
+        
     @classmethod
     def MakeNew(cls, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends=None, family=None, cleanup: Callable=None):   
         if targets is None:
@@ -103,6 +108,7 @@ class Meguca:
             else:
                 new_meguca.stats[stat] = random.randint(max(sensor_behavior.full_range[0], target - sensor_range),
                                                         min(sensor_behavior.full_range[1], target + sensor_range))
+        new_meguca.PrecalculateStatModifiers()
         return new_meguca
 
     def RandomizeName(self) -> None:
@@ -142,6 +148,7 @@ class Meguca:
             else:
                 setattr(new_meguca, cls.MEGUCA_FIXED_ATTRIBUTES[i], getattr(meguca_row, name))
         new_meguca.stats = json.loads(meguca_row.Stats)
+        new_meguca.PrecalculateStatModifiers()
         return new_meguca
         
     def ReconstructFriendsAndFamily(self, lookup_table: Dict[int, Any]):

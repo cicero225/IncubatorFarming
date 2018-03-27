@@ -1,9 +1,13 @@
+from typing import Any, Dict
+from Objs.Meguca.Meguca import Meguca
 from Objs.MegucaCity.MegucaCity import MegucaCity
 from Objs.Communications.EventResponse import *
+from Objs.Utils.GlobalDefines import *
 
 class Event:
 
-    def __init__(self, meguca_city: MegucaCity, is_multistage_event: bool,  event_display_name: str= None):
+    def __init__(self, meguca_city: MegucaCity, is_multistage_event: bool,  event_display_name: str=None,
+                 base_weight: float, stat_modifiers: Dict[str, float]):
         """
         Initializes an Event.
         This class is not meant to be used, only inherited from.
@@ -23,8 +27,19 @@ class Event:
         if event_display_name is None:
             event_display_name = self.event_name
         self.event_display_name = event_display_name
-
-
+        
+        self.base_weight = base_weight
+        self.stat_modifiers = stat_modifiers
+        
+        for key in stat_modifiers:
+            assert(key in MEGUCA_STATS)
+        self.weight_denominator = sum(stat.values())**(WEIGHT_POWER) if stat_modifiers else None
+        
+    def WeightForMeguca(self, meguca: Meguca):
+        meguca_weight = 0
+        for key, value in self.stat_modifiers.items():
+            meguca_weight += meguca.stat_contributions[key] * value
+        return meguca_weight**WEIGHT_POWER
 
 
 

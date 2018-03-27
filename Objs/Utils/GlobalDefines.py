@@ -1,5 +1,11 @@
 from enum import Enum
+import math
 from typing import List, Any
+
+# TODO: Consider putting these settings in the DB or something? Not sure if necesssary...
+MAXIMUM_RELATIVE_EVENT_WEIGHT = 5
+WEIGHT_POWER = math.log(MAXIMUM_RELATIVE_EVENT_WEIGHT, 2)
+
 
 # Represents a valid affinity type in sqlite3; used to describe column affinities for attempted coercion.
 class SqliteAffinityType(Enum):
