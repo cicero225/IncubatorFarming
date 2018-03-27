@@ -9,7 +9,7 @@ from Objs.Meguca.Meguca import Meguca
 from Objs.MegucaCity.MegucaCity import MegucaCity
 
 # Make a large city and try writing it.
-manager = DBManager(456, db_path="Data\ExampleDb.db")
+manager = DBManager(456, db_path="Data\ExampleDb.sqlite3")
 
 manager.CreateTableIfDoesNotExist(MEGUCA_TABLE_FIELDS, table=MEGUCA_TABLE_NAME)
 new_city = MegucaCity(456)  # city_id = 456
