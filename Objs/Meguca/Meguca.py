@@ -51,20 +51,20 @@ class Meguca:
         # We don't want this in __repr__, because it might get very long and obnoxious. This makes it a manual call.
         output_string_list = ["Friends:"]
         for friend in self.friends:
-            output_string_list.append(friend.GetFriendlyName())
+            output_string_list.append(friend.GetFullName())
         return "\n".join(output_string_list)
         
     def PrintFamily(self):
         # We don't want this in __repr__, because it might get very long and obnoxious. This makes it a manual call.
         output_string_list = ["Family:"]
         for member in self.family:
-            output_string_list.append(member.GetFriendlyName())
+            output_string_list.append(member.GetFullName())
         return "\n".join(output_string_list)
     
     def __eq__(self, other):
         return self.id == other.id
         
-    def GetFriendlyName(self):
+    def GetFullName(self):
         return self.personal_name + " " + self.surname
         
     def IncreaseStat(self, stat: str, change: int):

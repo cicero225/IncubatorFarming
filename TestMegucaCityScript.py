@@ -18,7 +18,7 @@ print(new_meguca)
 new_city.ContractMeguca(new_meguca.id)
 
 friend_meguca = random.choice(list(new_city.contracted_megucas.values()))
-print(friend_meguca.GetFriendlyName() + " brings friend!")
+print(friend_meguca.GetFullName() + " brings friend!")
 new_friend = new_city.NewMegucaFromFriend(friend_meguca)
 print(new_friend)
 
@@ -29,7 +29,7 @@ lost = new_city.PotentialDecay()
 if lost:
     print("These megucas have lost potential and may no longer be contracted:")
     for l in lost:
-        print(l.GetFriendlyName())
+        print(l.GetFullName())
 del lost
 
 # Okay now to do this in batch, first let's make a bunch of gucas.
@@ -105,7 +105,7 @@ while True:
     
     if new_city.contracted_megucas:
         friend_meguca = random.choice(list(new_city.contracted_megucas.values()))
-        print(friend_meguca.GetFriendlyName() + " brings friend!")
+        print(friend_meguca.GetFullName() + " brings friend!")
         new_friend = new_city.NewMegucaFromFriend(friend_meguca)
         print(new_friend)
         if random.random() > 0.5:
@@ -119,7 +119,7 @@ while True:
     if lost:
         print("These megucas have lost potential and may no longer be contracted.")
         for l in lost:
-            print(l.GetFriendlyName())
+            print(l.GetFullName())
     leave = input()
     if (leave == "q"):
         break

@@ -131,14 +131,14 @@ class MegucaCity:
                 continue
             while True:
                 proceed = True
-                if new_meguca.GetFriendlyName() in self.all_names:
+                if new_meguca.GetFullName() in self.all_names:
                     new_meguca.RandomizeName()
                     proceed = False
                 else:
                     break
             if proceed:
                 break
-        self.all_names.add(new_meguca.GetFriendlyName())   
+        self.all_names.add(new_meguca.GetFullName())
         # A simple approach. Each meguca has as many contractable friends as their friendships stat.
         # It is assumed that all of these must lie in the pool of potential_megucas + contracted_megucas + witches + dead_megucas = MEGUCA_POPULATION + dead_megucas (we include dead megucas to prevent numerical issues)
         # The probability of a given friend of theirs already being in the pool controlled by frienships stat and this population count.
@@ -207,7 +207,7 @@ class MegucaCity:
                 potential_lost.append(meguca)
         for meguca in potential_lost:
             del self.potential_megucas[meguca.id]  # Note that potential_lost is now the only owner of these objects.
-            self.all_names.remove(meguca.GetFriendlyName())
+            self.all_names.remove(meguca.GetFullName())
         return potential_lost
                 
     def WriteCityToDB(self, manager, forced=False):
@@ -246,7 +246,7 @@ class MegucaCity:
             new_city.friends_tracker.Set(new_meguca, new_meguca.friends)
             new_city.family_tracker.Set(new_meguca, new_meguca.family)
             used_ids.append(new_meguca.id)
-            new_city.all_names.add(new_meguca.GetFriendlyName())
+            new_city.all_names.add(new_meguca.GetFullName())
             if new_meguca.is_dead:
                 new_city.dead_megucas[new_meguca.id] = new_meguca
             elif new_meguca.is_witch:

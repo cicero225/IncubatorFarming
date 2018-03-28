@@ -6,8 +6,8 @@ from Objs.Utils.GlobalDefines import *
 
 class Event:
 
-    def __init__(self, meguca_city: MegucaCity, is_multistage_event: bool,  event_display_name: str=None,
-                 base_weight: float, stat_modifiers: Dict[str, float]):
+    def __init__(self, meguca_city: MegucaCity, is_multistage_event: bool, event_display_name: str = None,
+                 base_weight: float = 1.0, stat_modifiers: Dict[str, float] = {}):
         """
         Initializes an Event.
         This class is not meant to be used, only inherited from.
@@ -33,12 +33,20 @@ class Event:
         
         for key in stat_modifiers:
             assert(key in MEGUCA_STATS)
-        self.weight_denominator = sum(stat.values())**(WEIGHT_POWER) if stat_modifiers else None
+
+        # TODO: Hiero, please verify that this is fine
+        self.weight_denominator = sum(stat_modifiers.values())**(WEIGHT_POWER) if stat_modifiers else 1
         
     def WeightForMeguca(self, meguca: Meguca):
+        # TODO: Document this, what does it do?
         meguca_weight = 0
         for key, value in self.stat_modifiers.items():
             meguca_weight += meguca.stat_contributions[key] * value
+
+        if 0 == len(self.stat_modifiers):
+            # For events that are meguca-independent.
+            meguca_weight = 1
+
         return meguca_weight**WEIGHT_POWER
 
 

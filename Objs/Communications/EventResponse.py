@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 import datetime
 
 
@@ -6,8 +6,8 @@ class EventResponse:
 
     def __init__(self, event_name: str,
                  event_display_name: str,
-                 output_text: Tuple[str],
-                 voteable_options: Tuple[str],
+                 output_text: List[str],
+                 voteable_options: Tuple[str] = (),
                  event_sub_index: int = 0):
         """
         Sets up an event response, which will be sent and displayed to the players
