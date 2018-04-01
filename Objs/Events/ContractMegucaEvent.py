@@ -5,11 +5,13 @@ class ContractMegucaEvent(Event):
 
     def __init__(self, meguca_city: MegucaCity):
         # See the Event class for documentation
-        super().__init__(self, meguca_city, is_multistage_event=False, event_display_name="ContractMegucaEvent")
+        super().__init__(meguca_city, False, "ContractMegucaEvent")
 
+    # TODO: This assumes the new contractable meguca Event (which doesn't currently exist) is
+    # called "NewContractableMegucaEvent".
     def Run(self, state):
-        new_meguca_id = state.GetEventData(self.event_name)["new_meguca_id"]
-        new_meguca = self.meguca_city.GetMegucaById(new_meguca_id)
+        new_meguca_id = state.GetEventData("NewContractableMegucaEvent")["new_meguca_id"]
+        new_meguca = self.city.GetMegucaById(new_meguca_id)
         # TODO: Add exception handling/verification that said meguca exists
         # TODO: Maybe each function in meguca city should check and throw exceptions if necessary, and the class that manages the events handles them
         # TODO: That will mean we won't have to do exception handling in every event.
@@ -23,6 +25,7 @@ class ContractMegucaEvent(Event):
 
         return EventResponse(self.event_name, self.event_display_name, output_text)
 
+    # TODO: Make it so they can turn down contracts sometimes?
     def GenerateOutputText(self, meguca_name, wish_type):
         # TODO: Maybe we should have different output text based on the girl's stats?
         # TODO: Also, I'm pretty sure that there is a better way to do this. I should do that later.

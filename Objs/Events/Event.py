@@ -25,7 +25,6 @@ class Event:
         self.event_name = self.__class__.__name__
 
         self.city = meguca_city
-        self.state = state
         self.is_multistage_event = is_multistage_event
 
         if event_display_name is None:

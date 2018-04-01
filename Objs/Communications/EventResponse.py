@@ -28,6 +28,9 @@ class EventResponse:
         # Automatically generate timestamp
         self.timestamp = datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y")
 
+    # Quick hack. Do better job later maybe.
+    def __repr__(self):
+        return self.__dict__.__repr__()
 
 
 
