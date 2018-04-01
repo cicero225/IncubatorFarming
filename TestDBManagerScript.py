@@ -7,6 +7,8 @@ from Objs.DBManager.DBManager import DBManager
 from Objs.Meguca.Defines import *
 from Objs.Meguca.Meguca import Meguca
 from Objs.MegucaCity.MegucaCity import MegucaCity
+from Objs.State.State import State
+
 
 fake_city_id = 500
 
@@ -88,3 +90,26 @@ city_clone = MegucaCity.ReadCityFromDb(456, manager)
 new_city.original_read_dict = city_clone.original_read_dict
 
 assert(city_clone == new_city)
+
+new_state = State(manager)
+
+# Add dummy event Data
+new_state.sensors["potential"] = 2
+new_state.SetEventStage("fake_event", 4)
+new_state.GetEventData("fake_event2")["homu"] = "homuhomu"
+
+# Write to db.
+new_state.WriteState()
+
+manager.Commit()
+
+recovered_state = State(manager)
+assert(recovered_state.sensors == new_state.sensors)
+assert(recovered_state.targets == new_state.targets)
+assert(recovered_state.GetEventStage("fake_event") == 4)
+assert(recovered_state.GetEventData("fake_event2") == {"homu": "homuhomu"})
+
+# Write to db. This is mandatory.
+new_state.WriteState()
+
+manager.Commit()

@@ -39,7 +39,9 @@ def write_method(default_forced=False):
                 if kwargs["table"] not in self.valid_write_tables:
                     self.WriteExceptionState("table " + kwargs["table"] + " not valid write table!")
                     raise Exception("table " + kwargs["table"] + " not valid write table!")
-            return input_func(self, *args, **kwargs)
+            return_value = input_func(self, *args, **kwargs)        
+            self.written_tables.add(kwargs["table"])
+            return return_value
         return wraps(input_func)(output_func)
     return wow_decorator
 
@@ -70,8 +72,7 @@ class DBManager:
         self.connection = sqlite3.connect(db_path)
         self.valid_write_tables = set()
         self.must_write_tables = set()
-        self.written_tables = set()
-        self.statement_queue = []    
+        self.written_tables = set()   
         self.CreateTableIfDoesNotExist(EXCEPTION_TABLE_FIELDS, table=EXCEPTION_TABLE_NAME)
         
     def __del__(self):
@@ -142,7 +143,7 @@ class DBManager:
                 if col[0] in primary_key_names:
                     primary_key_list.append(row[idx])
             return_dict[frozenset(primary_key_list)] = (row_namedtuple(*new_entry), False)
-        return return_dict
+        return return_dict        
    
     # As discussed in the class description, does not commit a write action until Commit() is called.
     # write_dict should be the same format as the output of ReadTable
@@ -182,9 +183,6 @@ class DBManager:
             exception_str = "The following tables still need to be written to: " + str(not_written)
             self.WriteExceptionState(exception_str)
             raise Exception(exception_str)
-        c = self.connection.cursor()
-        for statement in self.statement_queue:
-            c.execute(statement)
         self.connection.commit()
         self.WriteExceptionState("", False)
         

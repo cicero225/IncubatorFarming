@@ -6,3 +6,4 @@ CREATE TABLE IF NOT EXISTS PythonGameError (CityID INTEGER, IsError INTEGER, Err
 CREATE TABLE IF NOT EXISTS MagicalGirlsTable (CityID INTEGER, MagicalGirlID INTEGER, IsWitch, INTEGER, IsContracted INTEGER,
                                               IsDead INTEGER, PersonalName TEXT, Surname TEXT, WishType TEXT, Stats TEXT,
                                               Friends TEXT, Family TEXT, PRIMARY KEY(CityID, MagicalGirlID))
+CREATE TABLE IF NOT EXISTS IncubatorFarmingGameState (CityID INTEGER, EntryName TEXT, EntryData TEXT)

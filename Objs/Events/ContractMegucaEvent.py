@@ -7,13 +7,9 @@ class ContractMegucaEvent(Event):
         # See the Event class for documentation
         super().__init__(self, meguca_city, is_multistage_event=False, event_display_name="ContractMegucaEvent")
 
-
-    # TODO(Itaywex): I don't think it's wise to require this to take meguca_id_to_contract as an argument,
-    # as it needs a consistent function signature to every other event.
-    # For now I'm changing this to make a new random guca (as this was the expectation megucacity was
-    # coded with)
-    def Run(self, state, subindex=0, vote_result=None):
-        new_meguca = self.meguca_city.NewSensorMeguca(state["targets"], state["sensors"])
+    def Run(self, state):
+        new_meguca_id = state.GetEventData(self.event_name)["new_meguca_id"]
+        new_meguca = self.meguca_city.GetMegucaById(new_meguca_id)
         # TODO: Add exception handling/verification that said meguca exists
         # TODO: Maybe each function in meguca city should check and throw exceptions if necessary, and the class that manages the events handles them
         # TODO: That will mean we won't have to do exception handling in every event.

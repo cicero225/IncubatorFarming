@@ -3,6 +3,7 @@ from Objs.Meguca.Meguca import Meguca
 from Objs.MegucaCity.MegucaCity import MegucaCity
 from Objs.Communications.EventResponse import *
 from Objs.Utils.GlobalDefines import *
+from Objs.State.State import State
 
 class Event:
 
@@ -54,7 +55,7 @@ class Event:
         
     # These are meant as effectively "Virtual" classes, more documentation of methods Events are
     # expected to implement than anything.
-    def Run(self, state):
+    def Run(self, state: State):
         raise NotImplementedError
         
     
