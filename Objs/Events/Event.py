@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 from Objs.Meguca.Meguca import Meguca
 from Objs.MegucaCity.MegucaCity import MegucaCity
 from Objs.Communications.EventResponse import *
@@ -6,8 +6,7 @@ from Objs.Utils.GlobalDefines import *
 
 class Event:
 
-    def __init__(self, meguca_city: MegucaCity, state,
-                 is_multistage_event: bool, event_display_name: str = None,
+    def __init__(self, meguca_city: MegucaCity, is_multistage_event: bool, event_display_name: str = None,
                  base_weight: float = 1.0, stat_modifiers: Dict[str, float] = {}):
         """
         Initializes an Event.
@@ -55,7 +54,7 @@ class Event:
         
     # These are meant as effectively "Virtual" classes, more documentation of methods Events are
     # expected to implement than anything.
-    def Run(self, self.state):
+    def Run(self, state):
         raise NotImplementedError
         
     
