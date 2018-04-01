@@ -6,13 +6,16 @@ from Objs.Utils.GlobalDefines import *
 
 class Event:
 
-    def __init__(self, meguca_city: MegucaCity, is_multistage_event: bool, event_display_name: str = None,
+    def __init__(self, meguca_city: MegucaCity, state,
+                 is_multistage_event: bool, event_display_name: str = None,
                  base_weight: float = 1.0, stat_modifiers: Dict[str, float] = {}):
         """
         Initializes an Event.
         This class is not meant to be used, only inherited from.
         :param meguca_city: The MegucaCity instance used by the game. The event requires it to
                             execute changes to the state of the game.
+        :param state: A state object or dict that contains any information about the state of the game not
+                      included in meguca_city.
         :param is_multistage_event: A boolean value of if the event is multistage or not.
         :param event_display_name: The display name of the event. If None then the name of the event class will
                                    be used
@@ -22,6 +25,7 @@ class Event:
         self.event_name = self.__class__.__name__
 
         self.city = meguca_city
+        self.state = state
         self.is_multistage_event = is_multistage_event
 
         if event_display_name is None:
@@ -34,7 +38,7 @@ class Event:
         for key in stat_modifiers:
             assert(key in MEGUCA_STATS)
 
-        # TODO: Hiero, please verify that this is fine
+        # Used for higher level probability calculations.
         self.weight_denominator = sum(stat_modifiers.values())**(WEIGHT_POWER) if stat_modifiers else 1
         
     def WeightForMeguca(self, meguca: Meguca):
@@ -48,6 +52,13 @@ class Event:
             meguca_weight = 1
 
         return meguca_weight**WEIGHT_POWER
+        
+    # These are meant as effectively "Virtual" classes, more documentation of methods Events are
+    # expected to implement than anything.
+    def Run(self, self.state):
+        raise NotImplementedError
+        
+    
 
 
 

@@ -5,18 +5,23 @@ class ContractMegucaEvent(Event):
 
     def __init__(self, meguca_city: MegucaCity, is_multistage_event: bool, event_display_name: str= None):
         # See the Event class for documentation
-        Event.__init__(self, meguca_city, is_multistage_event, event_display_name)
+        super().__init__(self, meguca_city, is_multistage_event=False, event_display_name="ContractMegucaEvent")
 
 
-    def Run(self, meguca_id_to_contract):
+    # TODO(Itaywex): I don't think it's wise to require this to take meguca_id_to_contract as an argument,
+    # as it needs a consistent function signature to every other event.
+    # For now I'm changing this to make a new random guca (as this was the expectation megucacity was
+    # coded with)
+    def Run(self, state):
+        new_meguca = self.meguca_city.NewSensorMeguca(state["targets"], state["sensors"])
         # TODO: Add exception handling/verification that said meguca exists
         # TODO: Maybe each function in meguca city should check and throw exceptions if necessary, and the class that manages the events handles them
         # TODO: That will mean we won't have to do exception handling in every event.
-        meguca_name = self.city.potential_megucas[meguca_id_to_contract].GetFullName()
-        meguca_wish = self.city.potential_megucas[meguca_id_to_contract].wish_type
+        meguca_name = new_meguca.GetFullName()
+        meguca_wish = new_meguca.wish_type
         self.event_display_name = f"{meguca_name} contracted"
 
-        self.city.ContractMeguca(meguca_id_to_contract)
+        self.city.ContractMeguca(new_meguca.id)
 
         output_text = self.GenerateOutputText(meguca_name, meguca_wish)
 
