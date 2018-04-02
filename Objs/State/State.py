@@ -30,10 +30,26 @@ class State:
         return event_data
         
     def GetEventStage(self, event_name: str):
-        return self.GetEventData(event_name).get("Stage",None)
+        event_data = self.GetEventData(event_name)
+        stage =  event_data.get("Stage", None)
+        if stage is None:
+            event_data["Stage"] = 0
+            stage = 0
+        return stage
         
     def SetEventStage(self, event_name: str, stage: int):
         self.GetEventData(event_name)["Stage"] = stage
+        
+    def IncrementEventStage(self, event_name: str, last_stage: int):
+        event_data = self.GetEventData(event_name)
+        stage =  event_data.get("Stage", 0)
+        event_data["Stage"] = (stage + 1) % (last_stage + 1)
+        
+    def GetAndIncrementEventStage(self, event_name: str, last_stage: int):
+        event_data = self.GetEventData(event_name)
+        stage =  event_data.get("Stage", 0)
+        event_data["Stage"] = (stage + 1) % (last_stage + 1)
+        return stage
      
     def GetDataForStateEntry(self, event_name: str):
         return self.manager.ReadTable(STATE_ROW, STATE_PRIMARY_KEYS,

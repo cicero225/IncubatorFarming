@@ -7,9 +7,8 @@ class ContractMegucaEvent(Event):
         # See the Event class for documentation
         super().__init__(meguca_city, False, "ContractMegucaEvent")
 
-    # TODO: This assumes the new contractable meguca Event (which doesn't currently exist) is
-    # called "NewContractableMegucaEvent".
-    def Run(self, state):
+    # TODO: Process the results of a vote to determine whether a contract is made.
+    def Run(self, state, vote_result=None):
         new_meguca_id = state.GetEventData("NewContractableMegucaEvent")["new_meguca_id"]
         new_meguca = self.city.GetMegucaById(new_meguca_id)
         # TODO: Add exception handling/verification that said meguca exists

@@ -6,7 +6,8 @@ class NewContractableMegucaEvent(Event):
         super().__init__(meguca_city, False, "NewContractableMegucaEvent")
 
     # TODO: Put the proper text here.
-    def Run(self, state):
+    def Run(self, state, vote_result=None):
         new_meguca = self.city.NewSensorMeguca(state.targets, state.sensors)
         state.GetEventData(self.event_name)["new_meguca_id"] = new_meguca.id
-        return EventResponse(self.event_name, self.event_display_name, "PLACEHOLDER")
+        return EventResponse(self.event_name, self.event_display_name, "PLACEHOLDER",
+                             voteable_options=("Offer Contract", "Ignore this girl"))

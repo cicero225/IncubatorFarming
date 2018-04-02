@@ -6,9 +6,9 @@ from Objs.Utils.GlobalDefines import *
 from Objs.State.State import State
 
 class Event:
-
+    # TODO: Document missing arguments.
     def __init__(self, meguca_city: MegucaCity, is_multistage_event: bool, event_display_name: str = None,
-                 base_weight: float = 1.0, stat_modifiers: Dict[str, float] = {}):
+                 base_weight: float = 1.0, stat_modifiers: Dict[str, float] = {}, last_stage=0):
         """
         Initializes an Event.
         This class is not meant to be used, only inherited from.
@@ -33,6 +33,7 @@ class Event:
         
         self.base_weight = base_weight
         self.stat_modifiers = stat_modifiers
+        self.last_stage = last_stage  # The last integer stage of this even (0 is event is single-stage)
         
         for key in stat_modifiers:
             assert(key in MEGUCA_STATS)
@@ -54,7 +55,7 @@ class Event:
         
     # These are meant as effectively "Virtual" classes, more documentation of methods Events are
     # expected to implement than anything.
-    def Run(self, state: State):
+    def Run(self, state: State, vote_result=None):
         raise NotImplementedError
         
     
