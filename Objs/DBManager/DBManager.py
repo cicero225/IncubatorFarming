@@ -1,5 +1,6 @@
 from functools import wraps
 from typing import Any, List, Dict
+import warnings
 import sqlite3
 
 from Objs.Utils.GlobalDefines import *
@@ -39,6 +40,7 @@ def write_method(default_forced=False):
                 if kwargs["table"] not in self.valid_write_tables:
                     self.WriteExceptionState("table " + kwargs["table"] + " not valid write table!")
                     raise Exception("table " + kwargs["table"] + " not valid write table!")
+            self.unsaved_changes = True
             return_value = input_func(self, *args, **kwargs)        
             self.written_tables.add(kwargs["table"])
             return return_value
@@ -74,8 +76,11 @@ class DBManager:
         self.must_write_tables = set()
         self.written_tables = set()   
         self.CreateTableIfDoesNotExist(EXCEPTION_TABLE_FIELDS, table=EXCEPTION_TABLE_NAME)
+        self.unsaved_changes = False
         
     def __del__(self):
+        if self.unsaved_changes:
+            warnings.warn("DBManager object destroyed with changes still pending!")
         self.connection.close()        
     
     # row_names is an iterable of tuples of (Column Name, SqliteAffinityType, Bool(is primary key?))
@@ -184,5 +189,9 @@ class DBManager:
             self.WriteExceptionState(exception_str)
             raise Exception(exception_str)
         self.connection.commit()
+        self.unsaved_changes = False
         self.WriteExceptionState("", False)
+        self.written_tables.clear()
+        self.must_write_tables.clear()
+        self.valid_write_tables.clear()
         
