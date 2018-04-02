@@ -3,6 +3,8 @@ import random
 from Objs.DBManager.DBManager import DBManager
 from Objs.DBManager.Defines import *
 from Objs.Events.ContractMegucaEvent import ContractMegucaEvent
+from Objs.Events.NewContractableMegucaEvent import NewContractableMegucaEvent
+from Objs.Meguca.Defines import *
 from Objs.Utils.GlobalDefines import *
 from Objs.State.State import State
 
@@ -25,12 +27,14 @@ for _ in range(50):
         new_city.KillPotential(new_meguca.id)
         
 manager = DBManager(fake_city_id)
+manager.CreateTableIfDoesNotExist(MEGUCA_TABLE_FIELDS, table=MEGUCA_TABLE_NAME)
         
 new_state = State(manager)
 
 # Select a meguca as the meguca to apply the ContractMeguca Event to (would normally be set by other event)
 
-new_state.GetEventData("NewContractableMegucaEvent")["new_meguca_id"] = random.choice(list(new_city.potential_megucas.keys()))
+event_instance = NewContractableMegucaEvent(new_city)
+event_instance.Run(new_state)
 
 # Write to db.
 new_state.WriteState()
@@ -42,3 +46,9 @@ recovered_state = State(manager)
 event_instance = ContractMegucaEvent(new_city)
 
 print(event_instance.Run(recovered_state))
+
+recovered_state.WriteState()
+
+new_city.WriteCityToDB(manager, forced=True)
+
+manager.Commit()
