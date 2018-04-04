@@ -7,7 +7,7 @@ class EventResponse:
     def __init__(self, event_name: str,
                  event_display_name: str,
                  output_text: List[str],
-                 voteable_options: Tuple[str] = (),
+                 votable_options: Tuple[str] = (),
                  event_sub_index: int = 0):
         """
         Sets up an event response, which will be sent and displayed to the players
@@ -23,7 +23,7 @@ class EventResponse:
         self.event_display_name = event_display_name
         self.event_sub_index = event_sub_index
         self.output_text = output_text
-        self.voteable_options = voteable_options
+        self.votable_options = votable_options
 
         # Automatically generate timestamp
         self.timestamp = datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y")

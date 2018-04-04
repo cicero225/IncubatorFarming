@@ -1,7 +1,8 @@
 from Objs.Communications.EventResponse import *
 from Objs.Utils.GlobalDefines import *
-from Objs.Event.Events import Event
-from typing import List
+from Objs.Events.Event import Event
+from Objs.MegucaCity.MegucaCity import MegucaCity
+from typing import List, Dict
 
 """
 A sort of Event metaclass, Phase represents any given phase of a game, containing knowledge of
@@ -16,8 +17,8 @@ Phase itself is also meant to be inherited from. It's a bit sparse, but is to so
 class Phase(Event):
     def __init__(self, meguca_city: MegucaCity, is_multistage_event: bool, event_display_name: str,
                  base_weight: float = 1.0, stat_modifiers: Dict[str, float] = {}, last_stage=0,
-                 valid_events: Dict[str, type]):
-        super().__init__(self, meguca_city, is_multistage_event, event_display_name, base_weight,
+                 valid_events: Dict[str, type] = {}):
+        super().__init__(meguca_city, is_multistage_event, event_display_name, base_weight,
         stat_modifiers, last_stage)
         self.valid_events = valid_events
         
@@ -27,10 +28,9 @@ class Phase(Event):
         # at most one event.
         # Personal note: I wouldn't ordinarily bother, and would consider making each event a singleton class,
         # but there's a chance the bot ends up running on a raspberry pi.
-        event_instance = self.valid_events[event_name](self.meguca_city, event_display_name=event_name)
+        event_instance = self.valid_events[event_name](self.city)
         output = event_instance.Run(state, vote_result)
-        new_stage = state.GetEventStage(event_instance.event_name)
-        if new_stage == 0:
+        if self.CheckIfEventDone(state, event_instance.event_name):
             # if event has only 1 stage, then new_stage is always 0 and we always increment.
             # if event has >1 stage, then if new_Stage is 0 event is done and we must increment.
             # Otherwise, do not increment.
@@ -39,6 +39,14 @@ class Phase(Event):
         
     # We still don't override Run, letting the concrete derived class deal with that.
     
+    @staticmethod
+    def CheckIfEventDone(state, event_name):
+        # Only run this after running the event once.
+        # single-stage events have stage=0 but are always done.
+        # multi-stage events are done if their stage have cycled around to 0
+        return (state.GetEventStage(event_name) == 0)
+    
     # Some simple utilities for common tasks.
-    def CheckIfVote(self, output: EventResponse):
+    @staticmethod
+    def CheckIfVote(output: EventResponse):
         return bool(output.votable_options)

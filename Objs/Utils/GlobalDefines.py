@@ -1,3 +1,4 @@
+from collections import namedtuple
 from enum import Enum
 import math
 from typing import List, Any
@@ -5,7 +6,12 @@ from typing import List, Any
 # TODO: Consider putting these settings in the DB or something? Not sure if necesssary...
 MAXIMUM_RELATIVE_EVENT_WEIGHT = 5
 WEIGHT_POWER = math.log(MAXIMUM_RELATIVE_EVENT_WEIGHT, 2)
+# Not a strict meguca limit or anything, but calibrates things like the chance of a meguca being a friend with an already
+# existing meguca.
+MEGUCA_POPULATION = 100
 
+# Initial megucas (potential, contracted, witch, dead)
+INITIAL_MEGUCA_POPULATION = (12, 12, 12, 12)
 
 # Represents a valid affinity type in sqlite3; used to describe column affinities for attempted coercion.
 class SqliteAffinityType(Enum):
@@ -15,6 +21,30 @@ class SqliteAffinityType(Enum):
     REAL = 4
     NONE = 5    
 
+# A simple table that indicates whether or not a game is running. If an entry exists at all, a game is running.
+RUNNING_TABLE_NAME = "FarmingGameRunning"
+
+RUNNING_TABLE_FIELDS = (("CityID", SqliteAffinityType.INTEGER, True),)
+
+RUNNING_PRIMARY_KEYS = [x[0] for x in RUNNING_TABLE_FIELDS if x[2]]                  
+                       
+RUNNING_ROW = namedtuple("RUNNING_ROW", [x[0] for x in RUNNING_TABLE_FIELDS]) 
+
+# The voting/event information table.
+VOTING_TABLE_NAME = "VoteEventTable"
+
+# OutputText is returned with the most recent text last.
+VOTING_TABLE_FIELDS = (("CityID", SqliteAffinityType.INTEGER, True),
+                       ("TimestampString", SqliteAffinityType.TEXT, True),
+                       ("OutputText", SqliteAffinityType.TEXT, False), # serialized json list of strings
+                       ("VotableOptions", SqliteAffinityType.TEXT, False), # serialized json list of strings
+                       ("VoteResultInteger", SqliteAffinityType.INTEGER, False),
+                       ("MostRecentEvent", SqliteAffinityType.TEXT, False))
+
+VOTING_PRIMARY_KEYS = [x[0] for x in VOTING_TABLE_FIELDS if x[2]]                  
+                       
+VOTING_ROW = namedtuple("VOTING_ROW", [x[0] for x in VOTING_TABLE_FIELDS]) 
+    
 # Hopefully not too big, just used to define how stats work with relation to sensors.
 class SensorBehavior:
     """

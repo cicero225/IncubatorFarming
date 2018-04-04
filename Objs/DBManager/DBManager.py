@@ -150,6 +150,12 @@ class DBManager:
             return_dict[frozenset(primary_key_list)] = (row_namedtuple(*new_entry), False)
         return return_dict        
    
+    @write_method()
+    def MarkWritten(self, *args, table: str):
+        # This does nothing but mark that this table has been "written" to. Used when you are sure
+        # no changes need be made, but the table has been marked expected_modification.
+        return
+   
     # As discussed in the class description, does not commit a write action until Commit() is called.
     # write_dict should be the same format as the output of ReadTable
     # field_names must be an object with order.

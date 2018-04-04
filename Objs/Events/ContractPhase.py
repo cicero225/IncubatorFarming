@@ -1,15 +1,14 @@
-from Objs.Event.Phase import Phase
+from Objs.Events.Phase import Phase
 from Objs.Events.ContractMegucaEvent import ContractMegucaEvent
 from Objs.Events.NewContractableMegucaEvent import NewContractableMegucaEvent
-
+from Objs.MegucaCity.MegucaCity import MegucaCity
 
 # Handles the phase of the game where a new random meguca is spawned and offered a contract.
 
 
-def ContractPhase(Phase):
-    def __init__(self, meguca_city: MegucaCity, is_multistage_event: bool, event_display_name: str,
-                 valid_events: Dict[str, type]):
-        super().__init__(self, meguca_city, True, "ContractPhase", last_stage=1
+class ContractPhase(Phase):
+    def __init__(self, meguca_city: MegucaCity):
+        super().__init__(meguca_city, True, "ContractPhase", last_stage=1,
                          valid_events =
                          {"ContractMegucaEvent": ContractMegucaEvent,
                           "NewContractableMegucaEvent": NewContractableMegucaEvent})

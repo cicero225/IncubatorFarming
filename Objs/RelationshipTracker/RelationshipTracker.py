@@ -70,7 +70,8 @@ class RelationshipTracker:
         for second in self.grid[id]:
             self.grid[second.id].remove(self.ProcessObjectOrIdIntoObject(member))
         del self.grid[id]
-        del self.id_member_lookup[id]
+        if id in self.id_member_lookup:
+            del self.id_member_lookup[id]
     
     # We need the original objects for this. We can be lax about using Ids elsewhere.
     def AddMultiple(self, first:Any, second: List[Any]):

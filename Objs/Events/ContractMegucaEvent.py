@@ -7,8 +7,9 @@ class ContractMegucaEvent(Event):
         # See the Event class for documentation
         super().__init__(meguca_city, False, "ContractMegucaEvent")
 
-    # TODO: Process the results of a vote to determine whether a contract is made.
-    def Run(self, state, vote_result=None):
+    def Run(self, state, vote_result):
+        if vote_result==1:
+            return EventResponse(self.event_name, self.event_display_name, "We decided this girl was not worth contracting, and move on.")
         new_meguca_id = state.GetEventData("NewContractableMegucaEvent")["new_meguca_id"]
         new_meguca = self.city.GetMegucaById(new_meguca_id)
         # TODO: Add exception handling/verification that said meguca exists
@@ -41,7 +42,7 @@ class ContractMegucaEvent(Event):
 
         fourth_paragraph = "Entropy has been reduced!"
 
-        return [first_paragraph, second_paragraph, third_paragraph, fourth_paragraph]
+        return "\n".join([first_paragraph, second_paragraph, third_paragraph, fourth_paragraph])
 
 
 

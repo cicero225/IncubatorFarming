@@ -52,7 +52,7 @@ manager.Commit()
 print('Reading only Meguca From DB...')
 
 # Read rows back.
-rows = manager. ReadTable(MEGUCA_ROW, MEGUCA_PRIMARY_KEYS, table=MEGUCA_TABLE_NAME, read_flag="read_only")
+rows = manager.ReadTable(MEGUCA_ROW, MEGUCA_PRIMARY_KEYS, table=MEGUCA_TABLE_NAME, read_flag="read_only")
 
 same_meguca = Meguca.FromMegucaRow(list(rows.values())[0][0])
 
