@@ -26,6 +26,7 @@ from typing import Any
 
 from Objs.DBManager.DBManager import DBManager
 from Objs.Events.Phase import Phase
+from Objs.Events.StartGameEvent import StartGameEvent
 from Objs.Meguca.Defines import *
 from Objs.MegucaCity.MegucaCity import MegucaCity
 from Objs.State.State import State
@@ -87,7 +88,11 @@ class Main:
     def Run(self):
         vote_result = -1
         vote_row = None
-        if not self.new_game:
+        results = []
+        if self.new_game:
+            # Run the game starting phase.
+            results.append(StartGameEvent(self.city).Run(self.state, vote_result))
+        else:
             # Get voting information.
             # TODO: Put this in the Communication Objects?
             vote_row = self.manager.ReadTable(VOTING_ROW, VOTING_PRIMARY_KEYS, {"CityId": self.city_id, "MostRecentEvent": 1}, table=VOTING_TABLE_NAME, read_flag="expected_modification")
@@ -98,12 +103,11 @@ class Main:
             if vote_result == -1:
                 raise AssertionError("Vote result not set! Is this correct?")
         # Make an instance of the phase
-        results = []
         this_phase = self.phase(self.city)
         while True:
             result = this_phase.Run(self.state, vote_result)
             results.append(result)
-            # Is the phase done? If so, increment out own phase.
+            # Is the phase done? If so, increment our own phase.
             event_done = Phase.CheckIfEventDone(self.state, this_phase.event_name)
             if event_done:
                 # We can make this arbitrarily complex, but for now this is fine.
