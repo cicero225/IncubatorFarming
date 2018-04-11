@@ -1,9 +1,13 @@
 from Objs.Events.Event import *
 
 class NewContractableMegucaEvent(Event):
+    is_multistage_event = False
+    event_name = __name__
+    event_display_name = event_name
+
     def __init__(self, meguca_city: MegucaCity):
         # See the Event class for documentation
-        super().__init__(meguca_city, False, "NewContractableMegucaEvent")
+        super().__init__(meguca_city)
 
     # TODO: Put the proper text here.
     def Run(self, state, vote_result=None):

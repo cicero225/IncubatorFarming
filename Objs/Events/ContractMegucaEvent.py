@@ -2,15 +2,18 @@ import random
 from Objs.Events.Event import *
 
 class ContractMegucaEvent(Event):
+    is_multistage_event = False
+    event_name = __name__
+    event_display_name = event_name
 
     def __init__(self, meguca_city: MegucaCity):
         # See the Event class for documentation
-        super().__init__(meguca_city, False, "ContractMegucaEvent")
+        super().__init__(meguca_city)
 
     def Run(self, state, vote_result):
         if vote_result==1:
             return EventResponse(self.event_name, self.event_display_name, "We decided this girl was not worth contracting, and move on.")
-        new_meguca_id = state.GetEventData("NewContractableMegucaEvent")["new_meguca_id"]
+        new_meguca_id = state.GetEventData("Objs.Events.NewContractableMegucaEvent")["new_meguca_id"]
         new_meguca = self.city.GetMegucaById(new_meguca_id)
         # TODO: Add exception handling/verification that said meguca exists
         # TODO: Maybe each function in meguca city should check and throw exceptions if necessary, and the class that manages the events handles them

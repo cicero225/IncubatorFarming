@@ -34,6 +34,7 @@ from Objs.Utils.GlobalDefines import *
 
 # Phases, in their own section because they're special
 from Objs.Events.ContractPhase import ContractPhase
+from Objs.Events.RandomEventPhase import RandomEventPhase
 
 parser = argparse.ArgumentParser(description='Incubator Farming Main Script')
 parser.add_argument('--restart', action='store_true',
@@ -44,7 +45,7 @@ parser.add_argument('db_path',
                     help='The location of the db file this game is stored in.')
 
 # Placing these constants here for easy reference. Can be split into own file if necessary.
-PHASE_ORDER = [ContractPhase]
+PHASE_ORDER = [ContractPhase, RandomEventPhase]
 
 class Main:
     PHASE_DICT = {x.__name__: x  for x in PHASE_ORDER}
@@ -67,12 +68,12 @@ class Main:
             for i, pop_count in enumerate(INITIAL_MEGUCA_POPULATION):
                 for _ in range(pop_count):
                     new_meguca = self.city.NewSensorMeguca()
-                if i>1:
-                    self.city.ContractMeguca(new_meguca.id)
-                if i==2:
-                    self.city.WitchMeguca(new_meguca.id)
-                elif i==3:
-                    self.city.KillMeguca(new_meguca.id)
+                    if i>=1:
+                        self.city.ContractMeguca(new_meguca.id)
+                    if i==2:
+                        self.city.WitchMeguca(new_meguca.id)
+                    elif i==3:
+                        self.city.KillMeguca(new_meguca.id)
             # TODO: Add an introduction phase.
             self.phase = PHASE_ORDER[0]
             self.state.current_phase = self.phase.__name__
@@ -133,6 +134,8 @@ class Main:
             self.city_id, results[-1].timestamp, json.dumps([r.output_text for r in results]),
             json.dumps(results[-1].votable_options), -1, 1),
             True)
+        for result in results:
+            print(result.output_text)  # For readability when running in terminal
         self.manager.WriteTable(vote_row, [x[0] for x in VOTING_TABLE_FIELDS],
                                 table=VOTING_TABLE_NAME, forced=self.new_game)
         self.FinalizeGameOutput()

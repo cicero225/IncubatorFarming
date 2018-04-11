@@ -7,9 +7,13 @@ from Objs.MegucaCity.MegucaCity import MegucaCity
 
 
 class ContractPhase(Phase):
+    is_multistage_event = True
+    last_stage = 1
+    event_name = __name__
+    event_display_name = event_name
+
     def __init__(self, meguca_city: MegucaCity):
-        super().__init__(meguca_city, True, "ContractPhase", last_stage=1,
-                         valid_events =
+        super().__init__(meguca_city, valid_events =
                          {"ContractMegucaEvent": ContractMegucaEvent,
                           "NewContractableMegucaEvent": NewContractableMegucaEvent})
                           

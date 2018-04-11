@@ -15,11 +15,11 @@ Phase itself is also meant to be inherited from. It's a bit sparse, but is to so
 """
 
 class Phase(Event):
-    def __init__(self, meguca_city: MegucaCity, is_multistage_event: bool, event_display_name: str,
-                 base_weight: float = 1.0, stat_modifiers: Dict[str, float] = {}, last_stage=0,
-                 valid_events: Dict[str, type] = {}):
-        super().__init__(meguca_city, is_multistage_event, event_display_name, base_weight,
-        stat_modifiers, last_stage)
+    event_name = __name__
+    event_display_name = event_name
+
+    def __init__(self, meguca_city: MegucaCity, valid_events: Dict[str, type] = {}):
+        super().__init__(meguca_city)
         self.valid_events = valid_events
         
     def RunEvent(self, event_name: str, state, vote_result):
@@ -41,10 +41,7 @@ class Phase(Event):
     
     @staticmethod
     def CheckIfEventDone(state, event_name):
-        # Only run this after running the event once.
-        # single-stage events have stage=0 but are always done.
-        # multi-stage events are done if their stage have cycled around to 0
-        return (state.GetEventStage(event_name) == 0)
+        return state.GetEventDone(event_name)
     
     # Some simple utilities for common tasks.
     @staticmethod

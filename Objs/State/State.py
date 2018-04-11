@@ -29,7 +29,22 @@ class State:
                 event_data = {}
             self.event_data[event_name] = event_data
         return event_data
-        
+    
+    def GetEventDone(self, event_name: str):
+        event_data = self.GetEventData(event_name)
+        done = event_data.get("Done", None)
+        if done is None:
+            # Only run this after running the event once.
+            # single-stage events have stage=0 but are always done.
+            # multi-stage events are done if their stage have cycled around to 0
+            # events can also provide their own value optionally.
+            return (self.GetEventStage(event_name) == 0)
+        return done
+    
+    # If you use this, make sure you set it to False or True in every return path.
+    def SetEventDone(self, event_name: str, done: bool):
+        self.GetEventData(event_name)["Done"] = done
+    
     def GetEventStage(self, event_name: str):
         event_data = self.GetEventData(event_name)
         stage =  event_data.get("Stage", None)
