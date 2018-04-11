@@ -48,11 +48,11 @@ PHASE_ORDER = [ContractPhase]
 class Main:
     PHASE_DICT = {x.__name__: x  for x in PHASE_ORDER}
 
-    def __init__(self, args):
+    def __init__(self, args, manager=None):
         # Initial object set up
         self.city_id = args.city_id
         self.db_path = args.db_path
-        self.manager = DBManager(self.city_id, self.db_path)
+        self.manager = DBManager(self.city_id, self.db_path) if manager is None else manager
         self.manager.CreateTableIfDoesNotExist(RUNNING_TABLE_FIELDS, table=RUNNING_TABLE_NAME)
         # Check if game is already running. If so, read from existing game. If not, start new game.
         potential_row = self.manager.ReadTable(RUNNING_ROW, RUNNING_PRIMARY_KEYS, {"CityId": self.city_id}, table=RUNNING_TABLE_NAME, read_flag="expected_modification")
@@ -96,8 +96,7 @@ class Main:
                 row_data = tuple(vote_row.values())[0][0]
             vote_result = row_data.VoteResultInteger
             if vote_result == -1:
-                self.manager.WriteExceptionState("Vote result not set! Is this correct?")
-                return
+                raise AssertionError("Vote result not set! Is this correct?")
         # Make an instance of the phase
         results = []
         this_phase = self.phase(self.city)
@@ -150,5 +149,10 @@ class Main:
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    main = Main(args)
-    main.Run()
+    manager = DBManager(args.city_id, args.db_path)
+    try:
+        main = Main(args, manager)
+        main.Run()
+    except Exception as e:
+        manager.WriteExceptionState(str(e))
+        raise e
