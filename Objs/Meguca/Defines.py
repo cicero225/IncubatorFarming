@@ -2,9 +2,9 @@ from collections import namedtuple
 
 from Objs.Utils.GlobalDefines import *
 
-FIRST_NAME_POOL = {"Oriko", "Kirika", "Yuma", "Iroha", "Yachiyo", "Tsuruno"}
+FIRST_NAME_POOL = {"Oriko", "Kirika", "Yuma", "Iroha", "Yachiyo", "Tsuruno", "Clarisse", "Elanis", "Felicia", "Mai"}
 
-LAST_NAME_POOL = {"Mikuni", "Kure", "Chitose", "Tamaki", "Nanami", "Yui"}
+LAST_NAME_POOL = {"Mikuni", "Kure", "Chitose", "Tamaki", "Nanami", "Yui", "Nonaka"}
 
 EITHER_NAME_POOL = { 
 "Kaname",
