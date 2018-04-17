@@ -29,7 +29,7 @@ class ContractMegucaEvent(Event):
         lost = self.city.PotentialDecay()
         
         if lost:
-            output_text += f"While investigating this girl, it comes to your attention that some other girls have lost potential: {', '.join(l.GetFullName() for l in lost)}.\n\nUnfortunate."
+            output_text += f"\n\nWhile investigating this girl, it comes to your attention that some other girls have lost potential: {', '.join(l.GetFullName() for l in lost)}.\n\nUnfortunate."
         
         return EventResponse(self.event_name, self.event_display_name, output_text)
 

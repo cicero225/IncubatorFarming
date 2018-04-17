@@ -135,7 +135,7 @@ class Main:
             json.dumps(results[-1].votable_options), -1, 1),
             True)
         for result in results:
-            print(result.output_text)  # For readability when running in terminal
+            print(result.output_text + "\n")  # For readability when running in terminal
         for i, option in enumerate(results[-1].votable_options):
             print(f"{i}: {option}")
         self.manager.WriteTable(vote_row, [x[0] for x in VOTING_TABLE_FIELDS],

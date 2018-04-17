@@ -1,12 +1,14 @@
 import random
 
 from Objs.Events.Phase import Phase
-from Objs.Events.NotAfraidOfAnythingAnymoreEvent import NotAfraidOfAnythingAnymoreEvent
 from Objs.MegucaCity.MegucaCity import MegucaCity
 from Objs.Utils.BaseUtils import WeightedDictRandom
 
-# Represents a random event. For now, it only handles exactly one random event.
+# Events.
+from Objs.Events.NotAfraidOfAnythingAnymoreEvent import NotAfraidOfAnythingAnymoreEvent
+from Objs.Events.SlowPeriodEvent import SlowPeriodEvent
 
+# Represents a random event.
 
 class RandomEventPhase(Phase):
     is_multistage_event = False
@@ -15,7 +17,8 @@ class RandomEventPhase(Phase):
     
     def __init__(self, meguca_city: MegucaCity):
         super().__init__(meguca_city, valid_events =
-                         {NotAfraidOfAnythingAnymoreEvent.event_name: NotAfraidOfAnythingAnymoreEvent})
+                         {NotAfraidOfAnythingAnymoreEvent.event_name: NotAfraidOfAnythingAnymoreEvent,
+                          SlowPeriodEvent.event_name: SlowPeriodEvent})
                           
     def Run(self, state, vote_result):
         # Check if we're already running an event

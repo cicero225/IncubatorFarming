@@ -31,6 +31,7 @@ class Meguca:
         self.family = [] if family_tracker_list is None else family_tracker_list
         self.cleanup = cleanup
         self.stat_contributions = {}
+        self.negative_stat_contributions = {}
     
     def __del__(self):
         if self.cleanup is not None:
@@ -82,6 +83,10 @@ class Meguca:
     def PrecalculateStatModifiers(self):
         for key, value in self.stats.items():
             self.stat_contributions[key] = 2*value/(self.MEGUCA_STATS[key].full_range[0] + self.MEGUCA_STATS[key].full_range[1])
+            
+    def PrecalculateNegativeStatModifiers(self):
+        for key, value in self.stats.items():
+            self.negative_stat_contributions[key] = 2*(self.MEGUCA_STATS[key].full_range[0] - value)/(self.MEGUCA_STATS[key].full_range[0] + self.MEGUCA_STATS[key].full_range[1])
         
     @classmethod
     def MakeNew(cls, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends=None, family=None, cleanup: Callable=None):   
@@ -109,6 +114,7 @@ class Meguca:
                 new_meguca.stats[stat] = random.randint(max(sensor_behavior.full_range[0], target - sensor_range),
                                                         min(sensor_behavior.full_range[1], target + sensor_range))
         new_meguca.PrecalculateStatModifiers()
+        new_meguca.PrecalculateNegativeStatModifiers()
         return new_meguca
 
     def RandomizeName(self) -> None:
@@ -149,6 +155,7 @@ class Meguca:
                 setattr(new_meguca, cls.MEGUCA_FIXED_ATTRIBUTES[i], getattr(meguca_row, name))
         new_meguca.stats = json.loads(meguca_row.Stats)
         new_meguca.PrecalculateStatModifiers()
+        new_meguca.PrecalculateNegativeStatModifiers()
         return new_meguca
         
     def ReconstructFriendsAndFamily(self, lookup_table: Dict[int, Any]):
@@ -159,5 +166,15 @@ class Meguca:
         for i, id in enumerate(self.family):
             self.family[i] = lookup_table[id]
 
+    def MakeMegucaDisplay(self, state):
+        # TODO: Add Wish Type display
+        stat_display_list = []
+        for stat, behavior in MEGUCA_STATS.items():
+            if behavior.default_visible or state.sensors[stat] > 0: 
+                stat_display_list.append(f"{stat}: {self.stats[stat]}")
+        stat_display_list.sort()
+        stat_display_string = '\n'.join(stat_display_list)
+        return f"{self.GetFullName()}\n\nStats:\n{stat_display_string}"
+            
     # Todo: need function for determining if a girl accepts contract or not.
     

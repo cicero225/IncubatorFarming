@@ -23,9 +23,12 @@ if __name__ == '__main__':
         main.Run()
         while True:
             try:
-                vote = int(input("Vote? "))
+                string_vote = input("Vote? ")
+                if (string_vote == "q"):
+                    raise AssertionError("There is no other way to exit this program >_>")
+                vote = int(string_vote)
                 break
-            except:
+            except (TypeError, ValueError):
                 print("Invalid input!")
         vote_row = manager.ReadTable(VOTING_ROW, VOTING_PRIMARY_KEYS,
                                      {"CityId": args.city_id, "MostRecentEvent": 1},

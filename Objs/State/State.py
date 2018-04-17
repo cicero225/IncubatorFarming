@@ -17,9 +17,18 @@ class State:
         self.manager.CreateTableIfDoesNotExist(STATE_TABLE_FIELDS, table=STATE_TABLE_NAME)
         self.sensors =  self.GetParsedDataOrDefault("sensors", {stat: 0 for stat in MEGUCA_STATS})
         self.targets =  self.GetParsedDataOrDefault("targets", {stat: 0 for stat in MEGUCA_STATS})
+        self.truth_level = self.GetParsedDataOrDefault("TruthLevel", 0)
+        self.energy_accumulated = self.GetParsedDataOrDefault("EnergyAccumulated", 0)
         self.current_phase = self.GetParsedDataOrDefault("CurrentPhase", "INITIAL")
         self.event_data = {}
-        
+    
+    def ChangeSensors(self, sensor_type: str, increment: int):
+        curlevel = self.sensors[sensor_type]
+        self.sensors[sensor_type] = min(max(curlevel, MEGUCA_STATS[sensor_type].full_range[0]),  MEGUCA_STATS[sensor_type].full_range[1])
+    
+    def CheckSensorIsMax(self, sensor_type: str):
+        return MEGUCA_STATS[sensor_type].full_range[1] == self.sensors[sensor_type]
+   
     def GetEventData(self, event_name: str):
         event_data = self.event_data.get(event_name, None)
         if event_data is None:
@@ -90,7 +99,11 @@ class State:
                       frozenset((self.city_id, "targets")):
                       (STATE_ROW(self.city_id, "targets", json.dumps(self.targets)), True),
                       frozenset((self.city_id, "CurrentPhase")):
-                      (STATE_ROW(self.city_id, "CurrentPhase", json.dumps(self.current_phase)), True),}
+                      (STATE_ROW(self.city_id, "CurrentPhase", json.dumps(self.current_phase)), True),
+                      frozenset((self.city_id, "TruthLevel")):
+                      (STATE_ROW(self.city_id, "TruthLevel", json.dumps(self.truth_level)), True),
+                      frozenset((self.city_id, "EnergyAccumulated")):
+                      (STATE_ROW(self.city_id, "EnergyAccumulated", json.dumps(self.energy_accumulated)), True)}
         for event_name, event_data in self.event_data.items():
             write_dict[frozenset((self.city_id, event_name))] = (STATE_ROW(self.city_id, event_name, json.dumps(event_data)), True)
         self.manager.WriteTable(write_dict, [x[0] for x in STATE_TABLE_FIELDS], table=STATE_TABLE_NAME)

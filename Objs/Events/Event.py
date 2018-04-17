@@ -37,7 +37,7 @@ class Event:
     @classmethod
     def GetWeightDenominator(cls):
         # Used for higher level probability calculations.
-        return sum(cls.stat_modifiers.values())**(WEIGHT_POWER) if cls.stat_modifiers else 1
+        return sum(abs(x) for x in cls.stat_modifiers.values())**(WEIGHT_POWER) if cls.stat_modifiers else 1
     
     # Note: On derived classes, this will properly use the derived class rather than base class.
     @classmethod
@@ -45,13 +45,17 @@ class Event:
         # TODO: Document this, what does it do?
         meguca_weight = 0
         for key, value in cls.stat_modifiers.items():
-            meguca_weight += meguca.stat_contributions[key] * value
+            if value > 0:
+                meguca_weight += meguca.stat_contributions[key] * value
+            elif value < 0:
+                meguca_weight += meguca.negative_stat_contributions[key] * -value
 
         if 0 == len(cls.stat_modifiers):
             # For events that are meguca-independent.
             meguca_weight = 1
 
-        return meguca_weight**WEIGHT_POWER
+        new_weight = meguca_weight**WEIGHT_POWER
+        return new_weight
         
     # These are meant as effectively "Virtual" classes, more documentation of methods Events are
     # expected to implement than anything.
