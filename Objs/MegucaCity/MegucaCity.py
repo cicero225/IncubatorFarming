@@ -232,8 +232,8 @@ class MegucaCity:
         
         # Drop Megucas that were deleted.
         for deleted_meguca in set(self.original_read_dict) - set(write_dict):
-            manager.DeleteRows({x: getattr(deleted_meguca, x) for x in MEGUCA_PRIMARY_KEYS},
-                               table=MEGUCA_TABLE_NAME, forced=forced)
+            manager.DeleteRows({x: getattr(self.original_read_dict.get(deleted_meguca)[0], x)
+                                for x in MEGUCA_PRIMARY_KEYS}, table=MEGUCA_TABLE_NAME, forced=forced)
     
     @classmethod
     def ReadCityFromDb(cls, city_id, manager):

@@ -175,7 +175,7 @@ class DBManager:
     @write_method()
     def DeleteRows(self, set_keys: Dict[str, Any], *args, table: str, forced=False):
         c = self.connection.cursor()
-        sql_base_string = "DELETE FROM ()".format(table)
+        sql_base_string = f"DELETE FROM {table}"
         where_string, where_format_list = self.MakeWhere(set_keys)
         c.execute(sql_base_string + where_string, where_format_list)
    
