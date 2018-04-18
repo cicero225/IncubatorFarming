@@ -1,33 +1,26 @@
 from Objs.Events.Phase import Phase
 from Objs.Events.ContractMegucaEvent import ContractMegucaEvent
-from Objs.Events.NewContractableMegucaEvent import NewContractableMegucaEvent
 from Objs.MegucaCity.MegucaCity import MegucaCity
 
 # Handles the phase of the game where a new random meguca is spawned and offered a contract.
 
 
 class ContractPhase(Phase):
-    is_multistage_event = True
-    last_stage = 1
+    is_multistage_event = False
     event_name = __name__
     event_display_name = event_name
 
     def __init__(self, meguca_city: MegucaCity):
         super().__init__(meguca_city, valid_events =
-                         {"ContractMegucaEvent": ContractMegucaEvent,
-                          "NewContractableMegucaEvent": NewContractableMegucaEvent})
+                         {"ContractMegucaEvent": ContractMegucaEvent})
                           
     def Run(self, state, vote_result):
         # Get the current event stage
         stage = state.GetEventStage(self.event_name)
-        # Awkward-looking but fine.
-        if stage == 0:
-            output = self.RunEvent("NewContractableMegucaEvent", state, vote_result)
-            # Here we know this always ends in a vote, so we return immediately. This is hardcoded logic
-            # that will not work for the other phases.
+        output = self.RunEvent("ContractMegucaEvent", state, vote_result)
+        # Check whether event is done and freeze this phase waiting for the next phase if not.
+        if not Phase.CheckIfEventDone(state, ContractMegucaEvent.event_name):
+            state.SetEventDone(self.event_name, False)
             return output
-        if stage == 1:
-            output = self.RunEvent("ContractMegucaEvent", state, vote_result)
-            # Here we know the phase is over, so return. This has no vote, so main should continue to next
-            # phase.
-            return output
+        state.SetEventDone(self.event_name, True)
+        return output

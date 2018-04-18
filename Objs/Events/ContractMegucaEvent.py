@@ -2,7 +2,8 @@ import random
 from Objs.Events.Event import *
 
 class ContractMegucaEvent(Event):
-    is_multistage_event = False
+    is_multistage_event = True
+    last_stage = 1
     event_name = __name__
     event_display_name = event_name
 
@@ -11,28 +12,40 @@ class ContractMegucaEvent(Event):
         super().__init__(meguca_city)
 
     def Run(self, state, vote_result):
-        if vote_result==1:
-            return EventResponse(self.event_name, self.event_display_name, "We decided this girl was not worth contracting, and move on.")
-        new_meguca_id = state.GetEventData("Objs.Events.NewContractableMegucaEvent")["new_meguca_id"]
-        new_meguca = self.city.GetMegucaById(new_meguca_id)
-        # TODO: Add exception handling/verification that said meguca exists
-        # TODO: Maybe each function in meguca city should check and throw exceptions if necessary, and the class that manages the events handles them
-        # TODO: That will mean we won't have to do exception handling in every event.
-        meguca_name = new_meguca.GetFullName()
-        meguca_wish = new_meguca.wish_type
-        self.event_display_name = f"{meguca_name} contracted"
+        potential = self.city.GetMegucasByTraits("potential")
+        # it is important this order be deterministic
+        potential.sort(key=lambda x: x.id)
+        # Get the current event stage
+        stage = state.GetEventStage(self.event_name)
+        state.IncrementEventStage(self.event_name, self.last_stage)
+        if stage == 0:
+            output_text = "It is time for you to consider contracting a new magical girl. Here are the current girls with potential:"
+            return EventResponse(self.event_name, self.event_display_name, output_text, [x.GetFullName() for x in potential] + ["Contract No One"])
+        if stage == 1:
+            if vote_result==len(potential):
+                output_text = "We decided not to contract anyone, and move on."
+                lost = self.city.PotentialDecay()     
+                if lost:
+                    output_text += f"\n\nIn the interim, it comes to your attention that some other girls have lost potential: {', '.join(l.GetFullName() for l in lost)}. This is unfortunate.\n\n"
+                return EventResponse(self.event_name, self.event_display_name, output_text)
+            new_meguca = potential[vote_result]
+            # TODO: Maybe each function in meguca city should check and throw exceptions if necessary, and the class that manages the events handles them
+            # TODO: That will mean we won't have to do exception handling in every event.
+            meguca_name = new_meguca.GetFullName()
+            meguca_wish = new_meguca.wish_type
+            self.event_display_name = f"{meguca_name} contracted"
 
-        self.city.ContractMeguca(new_meguca.id)
+            self.city.ContractMeguca(new_meguca.id)
 
-        output_text = self.GenerateOutputText(meguca_name, meguca_wish)
+            output_text = self.GenerateOutputText(meguca_name, meguca_wish)
 
-        lost = self.city.PotentialDecay()
-        
-        if lost:
-            output_text += f"\n\nWhile investigating this girl, it comes to your attention that some other girls have lost potential: {', '.join(l.GetFullName() for l in lost)}.\n\nUnfortunate."
-        
-        return EventResponse(self.event_name, self.event_display_name, output_text)
-
+            lost = self.city.PotentialDecay()
+            
+            if lost:
+                output_text += f"\n\nIn the interim, it comes to your attention that some other girls have lost potential: {', '.join(l.GetFullName() for l in lost)}. This is unfortunate.\n\n"
+            
+            return EventResponse(self.event_name, self.event_display_name, output_text)
+    
     # TODO: Make it so they can turn down contracts sometimes?
     def GenerateOutputText(self, meguca_name, wish_type):
         # TODO: Maybe we should have different output text based on the girl's stats?

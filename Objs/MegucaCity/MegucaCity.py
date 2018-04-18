@@ -200,7 +200,7 @@ class MegucaCity:
     def PotentialDecay(self) -> List[Meguca]:  # When called, causes megucas waiting in the potential pool to randomly lose potential (deallocate)
         potential_lost = []
         for id, meguca in self.potential_megucas.items():
-            chance_lost_potential = 1 - meguca.stats["potential"]/6
+            chance_lost_potential = (1 - meguca.stats["potential"]/6) * POTENTIAL_DECAY_RATE
             if random.random() < chance_lost_potential: # Potential lost.
                 if meguca.cleanup(meguca) is not None:
                     meguca.cleanup(meguca)

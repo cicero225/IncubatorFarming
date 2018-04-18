@@ -13,6 +13,9 @@ MEGUCA_POPULATION = 100
 # Initial megucas (potential, contracted, witch, dead)
 INITIAL_MEGUCA_POPULATION = (12, 12, 12, 12)
 
+# Chance of decay based on potential. 1 in 6 for potential 5 and 5 in 6 for potential 1, multiplied by this value.
+POTENTIAL_DECAY_RATE = 0.1  
+
 # Represents a valid affinity type in sqlite3; used to describe column affinities for attempted coercion.
 class SqliteAffinityType(Enum):
     TEXT = 1
