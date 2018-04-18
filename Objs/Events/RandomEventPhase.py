@@ -23,7 +23,10 @@ class RandomEventPhase(Phase):
     def Run(self, state, vote_result):
         # Check if we're already running an event
         new_event = state.GetEventData(self.event_name).get("CurrentEvent")
-        if not new_event:
+        if new_event:
+            # Continue the previous event.
+            output = self.RunEvent(new_event, state, vote_result)
+        else:
             # If not, pick a random event.
             # First parse the event probabilities
             weight_dict = {}

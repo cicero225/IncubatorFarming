@@ -40,6 +40,7 @@ class State:
         return event_data
     
     def GetEventDone(self, event_name: str):
+        assert("." in event_name)  # covers a common programming error elsewhere. Awkward.
         event_data = self.GetEventData(event_name)
         done = event_data.get("Done", None)
         if done is None:
