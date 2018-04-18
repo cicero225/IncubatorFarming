@@ -86,7 +86,7 @@ class Meguca:
             
     def PrecalculateNegativeStatModifiers(self):
         for key, value in self.stats.items():
-            self.negative_stat_contributions[key] = 2*(self.MEGUCA_STATS[key].full_range[0] - value)/(self.MEGUCA_STATS[key].full_range[0] + self.MEGUCA_STATS[key].full_range[1])
+            self.negative_stat_contributions[key] = 2*(self.MEGUCA_STATS[key].full_range[1] - value)/(self.MEGUCA_STATS[key].full_range[0] + self.MEGUCA_STATS[key].full_range[1])
         
     @classmethod
     def MakeNew(cls, targets: Dict[str, int]=None, sensors: Dict[str, int]=None, friends=None, family=None, cleanup: Callable=None):   
