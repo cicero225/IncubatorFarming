@@ -22,4 +22,7 @@ GAME_EVENTS_STATE_FIELDS = (("CityID", SqliteAffinityType.INTEGER, True),
                             ("VoteableOptions", SqliteAffinityType.TEXT, False),       # The actions the players can take
                             ("Timestamp", SqliteAffinityType.TEXT, False))             # The time in which the event was played
 
-
+# Table of energy changes
+ENERGY_CHANGES = {
+"BODY_KILLED": -10,
+}

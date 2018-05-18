@@ -9,6 +9,7 @@ class SlowPeriodEvent(Event):
     last_stage = 1
     event_name = __name__
     event_display_name = event_name
+    meguca_weights = {}
 
     def __init__(self, meguca_city: MegucaCity):
         # See the Event class for documentation

@@ -2,6 +2,7 @@ from typing import Any, Dict, Tuple
 from Objs.Meguca.Meguca import Meguca
 from Objs.MegucaCity.MegucaCity import MegucaCity
 from Objs.Communications.EventResponse import *
+from Objs.Utils.BaseUtils import WeightedDictRandom
 from Objs.Utils.GlobalDefines import *
 from Objs.State.State import State
 
@@ -14,6 +15,7 @@ class Event:
     event_name = __name__
     event_display_name = event_name
     last_stage = 0  # The last integer stage of this even (0 is event is single-stage)
+    meguca_weights = None  # caches the results of WeightForMeguca if it needs to get called more than once. This is here more as a reminder - the derived class must set this to {}!
     
     # TODO: Document missing arguments.
     def __init__(self, meguca_city: MegucaCity):
@@ -42,7 +44,11 @@ class Event:
     # Note: On derived classes, this will properly use the derived class rather than base class.
     @classmethod
     def WeightForMeguca(cls, meguca: Meguca):
-        # TODO: Document this, what does it do?
+        # Get the relative weight contributed by each individual meguca to the overall probability calculation.
+        # Also used to influence meguca selection when choosing megucas for events.
+        new_weight = cls.meguca_weights.get(meguca.id)
+        if new_weight is not None:
+            return new_weight
         meguca_weight = 0
         for key, value in cls.stat_modifiers.items():
             if value > 0:
@@ -55,8 +61,19 @@ class Event:
             meguca_weight = 1
 
         new_weight = meguca_weight**WEIGHT_POWER
+        cls.meguca_weights[meguca.id] = new_weight
         return new_weight
-        
+    
+    @classmethod
+    def SelectMegucaByWeight(cls, megucas: List[Meguca]):
+        # Pick a meguca based on the results of WeightForMeguca
+        weight_dict = {meguca.id: cls.WeightForMeguca(meguca) for meguca in megucas}
+        random_id = WeightedDictRandom(weight_dict)[0]
+        # Kind of awkward but oh well.
+        for meguca in megucas:
+            if random_id == meguca.id:
+                return meguca
+    
     # These are meant as effectively "Virtual" classes, more documentation of methods Events are
     # expected to implement than anything.
     def Run(self, state: State, vote_result=None):

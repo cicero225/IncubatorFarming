@@ -7,6 +7,7 @@ from Objs.Utils.BaseUtils import WeightedDictRandom
 # Events.
 from Objs.Events.NotAfraidOfAnythingAnymoreEvent import NotAfraidOfAnythingAnymoreEvent
 from Objs.Events.SlowPeriodEvent import SlowPeriodEvent
+from Objs.Events.GetHuntedEvent import GetHuntedEvent
 
 # Represents a random event.
 
@@ -18,7 +19,8 @@ class RandomEventPhase(Phase):
     def __init__(self, meguca_city: MegucaCity):
         super().__init__(meguca_city, valid_events =
                          {NotAfraidOfAnythingAnymoreEvent.event_name: NotAfraidOfAnythingAnymoreEvent,
-                          SlowPeriodEvent.event_name: SlowPeriodEvent})
+                          SlowPeriodEvent.event_name: SlowPeriodEvent,
+                          GetHuntedEvent.event_name: GetHuntedEvent})
                           
     def Run(self, state, vote_result):
         # Check if we're already running an event

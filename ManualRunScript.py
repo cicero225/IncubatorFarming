@@ -20,6 +20,8 @@ if __name__ == '__main__':
     manager = DBManager(args.city_id, args.db_path)                    
     while True:
         main = Main(args, manager)
+        # TEMPORARY: Starting Truth for testing
+        main.state.truth_level = 0.5
         main.Run()
         while True:
             try:

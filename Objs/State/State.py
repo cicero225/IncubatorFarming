@@ -22,6 +22,17 @@ class State:
         self.current_phase = self.GetParsedDataOrDefault("CurrentPhase", "INITIAL")
         self.event_data = {}
     
+    def ChangeTruth(self, change: float) -> None:
+        self.truth_level = min(max(self.truth_level + change, 0), 1)
+    
+    # Return value indicates whether we've hit Incubator bankruptcy.
+    def ChangeEnergy(self, change: int, forced: bool=False) -> bool:
+        is_valid = (change > -self.energy_accumulated)
+        if not is_valid and not forced:
+            return False
+        self.energy_accumulated = max(self.energy_accumulated + change, 0)
+        return is_valid
+    
     def ChangeSensors(self, sensor_type: str, increment: int):
         curlevel = self.sensors[sensor_type]
         self.sensors[sensor_type] = min(max(curlevel, MEGUCA_STATS[sensor_type].full_range[0]),  MEGUCA_STATS[sensor_type].full_range[1])
