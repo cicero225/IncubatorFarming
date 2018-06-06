@@ -72,15 +72,25 @@ class MegucaCity:
         return all_valid
     
     # A bit repetitive, but...
-    def ContractMeguca(self, id: int):
+    # Calling this with state None is only valid during setup.
+    def ContractMeguca(self, id: int, state):
         self.contracted_megucas[id] = self.potential_megucas[id]
         del self.potential_megucas[id]
         self.contracted_megucas[id].is_contracted = True
-        
-    def WitchMeguca(self, id: int):
+        if state is not None:
+            energy_gain = self.contracted_megucas[id].stats['potential']*ENERGY_CHANGES['NEW_CONTRACT']
+            state.ChangeEnergy(energy_gain)
+            return energy_gain
+    
+    # Calling this with state None is only valid during setup.
+    def WitchMeguca(self, id: int, state):
         self.witches[id] = self.contracted_megucas[id]
         del self.contracted_megucas[id]
         self.witches[id].is_witch = True
+        if state is not None:
+            energy_gain = self.witches[id].stats['potential']*ENERGY_CHANGES['NEW_WITCH']
+            state.ChangeEnergy(energy_gain)
+            return energy_gain
         
     def KillPotential(self, id: int):
         self.dead_megucas[id] = self.potential_megucas[id]

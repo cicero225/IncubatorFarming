@@ -15,7 +15,7 @@ print("New Meguca!")
 new_meguca = new_city.NewSensorMeguca()
 print(new_meguca)
 
-new_city.ContractMeguca(new_meguca.id)
+new_city.ContractMeguca(new_meguca.id, None)
 
 friend_meguca = random.choice(list(new_city.contracted_megucas.values()))
 print(friend_meguca.GetFullName() + " brings friend!")
@@ -38,10 +38,10 @@ for _ in range(50):
     # Hardcode just for testing here
     rand_val = random.random()
     if rand_val < 0.25:
-        new_city.ContractMeguca(new_meguca.id)
+        new_city.ContractMeguca(new_meguca.id, None)
     elif rand_val < 0.5:
-        new_city.ContractMeguca(new_meguca.id)
-        new_city.WitchMeguca(new_meguca.id)
+        new_city.ContractMeguca(new_meguca.id, None)
+        new_city.WitchMeguca(new_meguca.id, None)
     elif rand_val < 0.75:
         new_city.KillPotential(new_meguca.id)
 
@@ -96,7 +96,7 @@ while True:
     print(new_meguca)
     if random.random() > 0.5:
         print("Contracting Meguca...")
-        new_city.ContractMeguca(new_meguca.id)
+        new_city.ContractMeguca(new_meguca.id, None)
     else:
         print("We did not contract!")
         
@@ -110,7 +110,7 @@ while True:
         print(new_friend)
         if random.random() > 0.5:
             print("Contracting Meguca...")
-            new_city.ContractMeguca(new_friend.id)
+            new_city.ContractMeguca(new_friend.id, None)
         else:
             print("We did not contract!")
     

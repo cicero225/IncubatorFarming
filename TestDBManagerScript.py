@@ -74,10 +74,10 @@ for _ in range(50):
     # Hardcode just for testing here
     rand_val = random.random()
     if rand_val < 0.25:
-        new_city.ContractMeguca(new_meguca.id)
+        new_city.ContractMeguca(new_meguca.id, None)
     elif rand_val < 0.5:
-        new_city.ContractMeguca(new_meguca.id)
-        new_city.WitchMeguca(new_meguca.id)
+        new_city.ContractMeguca(new_meguca.id, None)
+        new_city.WitchMeguca(new_meguca.id, None)
     elif rand_val < 0.75:
         new_city.KillPotential(new_meguca.id)
 

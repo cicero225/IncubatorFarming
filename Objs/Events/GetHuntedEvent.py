@@ -1,7 +1,7 @@
 import random
 
-from Objs.Events.EventsDBDefines import *
 from Objs.Events.Event import *
+from Objs.Utils.GlobalDefines import ENERGY_CHANGES
 
 # TODO: Make Random events their own base class to derive this from? Maybe... 
 # OKAY definitely do the above when you get a chance. Add a function for checking that function is valid and

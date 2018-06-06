@@ -88,3 +88,10 @@ MEGUCA_STATS = {"potential": SensorBehavior((1, 5), (-1, 2, 0), True, True),
                 "aggression": SensorBehavior((1, 5), (-1, 1, 0), False, True)}
                 
 WISH_TYPES = ("healing", "revenge",  "wealth", "friends", "romance")
+
+# Table of energy changes
+ENERGY_CHANGES = {
+"BODY_KILLED": -10,
+"NEW_WITCH": 10,  # per level of potential.
+"NEW_CONTRACT": 1,  # per level of potential
+}

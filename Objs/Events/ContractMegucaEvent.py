@@ -35,9 +35,9 @@ class ContractMegucaEvent(Event):
             meguca_wish = new_meguca.wish_type
             self.event_display_name = f"{meguca_name} contracted"
 
-            self.city.ContractMeguca(new_meguca.id)
+            energy_gain = self.city.ContractMeguca(new_meguca.id, state)
 
-            output_text = self.GenerateOutputText(meguca_name, meguca_wish)
+            output_text = self.GenerateOutputText(meguca_name, meguca_wish, energy_gain)
 
             lost = self.city.PotentialDecay()
             
@@ -47,7 +47,7 @@ class ContractMegucaEvent(Event):
             return EventResponse(self.event_name, self.event_display_name, output_text)
     
     # TODO: Make it so they can turn down contracts sometimes?
-    def GenerateOutputText(self, meguca_name, wish_type):
+    def GenerateOutputText(self, meguca_name, wish_type, energy_gain):
         # TODO: Maybe we should have different output text based on the girl's stats?
         # TODO: Also, I'm pretty sure that there is a better way to do this. I should do that later.
 
@@ -61,7 +61,7 @@ class ContractMegucaEvent(Event):
 
         third_paragraph = f"She wished for {wish_type}"
 
-        fourth_paragraph = "Entropy has been reduced!"
+        fourth_paragraph = f"Entropy has been reduced! Gain {energy_gain} energy!"
 
         return "\n".join([first_paragraph, second_paragraph, third_paragraph, fourth_paragraph])
 

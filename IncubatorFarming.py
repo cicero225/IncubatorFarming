@@ -69,9 +69,9 @@ class Main:
                 for _ in range(pop_count):
                     new_meguca = self.city.NewSensorMeguca()
                     if i>=1:
-                        self.city.ContractMeguca(new_meguca.id)
+                        self.city.ContractMeguca(new_meguca.id, None)
                     if i==2:
-                        self.city.WitchMeguca(new_meguca.id)
+                        self.city.WitchMeguca(new_meguca.id, None)
                     elif i==3:
                         self.city.KillMeguca(new_meguca.id)
             # TODO: Add an introduction phase.

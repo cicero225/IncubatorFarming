@@ -5,6 +5,7 @@ from Objs.MegucaCity.MegucaCity import MegucaCity
 from Objs.Utils.BaseUtils import WeightedDictRandom
 
 # Events.
+from Objs.Events.EmotionalWitchOutEvent import EmotionalWitchOutEvent
 from Objs.Events.NotAfraidOfAnythingAnymoreEvent import NotAfraidOfAnythingAnymoreEvent
 from Objs.Events.SlowPeriodEvent import SlowPeriodEvent
 from Objs.Events.GetHuntedEvent import GetHuntedEvent
@@ -20,7 +21,8 @@ class RandomEventPhase(Phase):
         super().__init__(meguca_city, valid_events =
                          {NotAfraidOfAnythingAnymoreEvent.event_name: NotAfraidOfAnythingAnymoreEvent,
                           SlowPeriodEvent.event_name: SlowPeriodEvent,
-                          GetHuntedEvent.event_name: GetHuntedEvent})
+                          GetHuntedEvent.event_name: GetHuntedEvent,
+                          EmotionalWitchOutEvent.event_name: EmotionalWitchOutEvent})
                           
     def Run(self, state, vote_result):
         # Check if we're already running an event
